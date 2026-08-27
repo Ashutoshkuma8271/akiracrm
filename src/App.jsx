@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CrmProvider, useCrm } from './context/CrmContext';
 import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
+import MobileBottomNav from './components/common/MobileBottomNav';
 import OverviewDashboard from './components/overview/OverviewDashboard';
 import CustomersView from './components/customers/CustomersView';
 import OrdersView from './components/orders/OrdersView';
@@ -14,6 +15,7 @@ import { Check, Info, AlertTriangle } from 'lucide-react';
 function CrmApp() {
   const [activeNav, setActiveNav] = useState('Overview');
   const [selectedCustomerForOrder, setSelectedCustomerForOrder] = useState(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { toast } = useCrm();
 
   const handleCreateOrderForCustomer = (customer) => {
@@ -27,13 +29,20 @@ function CrmApp() {
 
   return (
     <div className="app-shell">
-      <Sidebar activeNav={activeNav} setActiveNav={setActiveNav} />
+      <Sidebar
+        activeNav={activeNav}
+        setActiveNav={setActiveNav}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
 
       <main className="main-content">
         <Header
           activeNav={activeNav}
           setActiveNav={setActiveNav}
           onGlobalSearch={handleGlobalSearch}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          isMobileSidebarOpen={isMobileSidebarOpen}
         />
 
         <div className="page-wrap">
@@ -58,6 +67,9 @@ function CrmApp() {
           {activeNav === 'Settings' && <SettingsView />}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav activeNav={activeNav} setActiveNav={setActiveNav} />
 
       {/* Global Toast Notification */}
       {toast && (

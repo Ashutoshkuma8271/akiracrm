@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Bell, Snowflake, ShieldCheck, Search, Sparkles } from 'lucide-react';
+import { Bell, Snowflake, Menu, X, Search } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 import NotificationPopover from './NotificationPopover';
 
-export default function Header({ activeNav, setActiveNav, onGlobalSearch }) {
-  const { notifications, customers, orders, products, showToast } = useCrm();
+export default function Header({ activeNav, setActiveNav, onGlobalSearch, onToggleMobileSidebar, isMobileSidebarOpen }) {
+  const { notifications, showToast } = useCrm();
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -17,28 +18,38 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch }) {
         onGlobalSearch(searchTerm);
       }
       showToast(`Searching for "${searchTerm}"`);
+      setShowMobileSearch(false);
     }
   };
 
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button
+          className="mobile-menu-toggle"
+          onClick={onToggleMobileSidebar}
+          aria-label="Toggle navigation menu"
+        >
+          {isMobileSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
         <div className="breadcrumbs">
-          <span>Akira Fresh CRM</span>
-          <b>/</b>
+          <span className="hide-on-mobile">Akira Fresh</span>
+          <b className="hide-on-mobile">/</b>
           <strong>{activeNav}</strong>
         </div>
 
-        <div className="brand-pill">
-          <Snowflake size={14} className="snowflake-spin text-coral" />
-          <span>Blast Frozen &bull; Sub-Zero Cold Chain</span>
+        <div className="brand-pill hide-on-mobile-sm">
+          <Snowflake size={13} className="snowflake-spin text-emerald" />
+          <span>Blast Frozen &bull; Sub-Zero SLA</span>
           <span className="pill-dot"></span>
-          <span className="pill-temp">-18.6°C SLA Active</span>
+          <span className="pill-temp">-18.6°C</span>
         </div>
       </div>
 
       <div className="top-actions">
-        <form className="global-search-form" onSubmit={handleSearchSubmit}>
+        {/* Desktop & Tablet Search Form */}
+        <form className={`global-search-form ${showMobileSearch ? 'mobile-search-active' : ''}`} onSubmit={handleSearchSubmit}>
           <Search size={15} className="search-icon-svg" />
           <input
             type="text"
@@ -57,6 +68,14 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch }) {
           )}
         </form>
 
+        <button
+          className="icon-button mobile-search-toggle"
+          onClick={() => setShowMobileSearch(!showMobileSearch)}
+          aria-label="Toggle search"
+        >
+          <Search size={18} />
+        </button>
+
         <div className="notif-wrapper">
           <button
             className="icon-button"
@@ -72,7 +91,7 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch }) {
 
         <div className="top-avatar-wrap" title="Administrator: Shreya Kapoor">
           <div className="top-avatar">SK</div>
-          <div className="admin-status">
+          <div className="admin-status hide-on-mobile">
             <strong>Shreya Kapoor</strong>
             <small>Operations Lead</small>
           </div>
