@@ -19,7 +19,11 @@ import {
   FileText,
   Clock,
   ArrowRight,
-  MessageSquare
+  MessageSquare,
+  Award,
+  Flame,
+  TrendingUp,
+  UserCheck
 } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
@@ -50,11 +54,14 @@ export default function CustomersView({ onSelectCreateOrder }) {
         cust.name.toLowerCase().includes(q) ||
         cust.email.toLowerCase().includes(q) ||
         cust.phone.toLowerCase().includes(q) ||
-        cust.location.toLowerCase().includes(q) ||
+        (cust.zone && cust.zone.toLowerCase().includes(q)) ||
+        (cust.address && cust.address.toLowerCase().includes(q)) ||
         (cust.favoriteProduct && cust.favoriteProduct.toLowerCase().includes(q));
 
       const matchesFilter =
-        filterTag === 'All customers' || cust.tag.toLowerCase() === filterTag.toLowerCase();
+        filterTag === 'All customers' ||
+        cust.tag.toLowerCase() === filterTag.toLowerCase() ||
+        (cust.rfmCohort && cust.rfmCohort.toLowerCase().includes(filterTag.toLowerCase()));
 
       return matchesSearch && matchesFilter;
     });
@@ -71,18 +78,19 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
   // Export CSV
   const handleExportCSV = () => {
-    const headers = ['ID', 'Name', 'Phone', 'Email', 'Location', 'Zone', 'Tag', 'Status', 'Orders', 'Total Spent', 'Favorite Product', 'Notes'];
+    const headers = ['ID', 'Name', 'Phone', 'Email', 'Address', 'Zone', 'Tag', 'RFM Cohort', 'Diet Preference', 'Orders', 'Total Spent', 'Favorite Product', 'Notes'];
     const rows = customers.map((c) => [
       c.id,
       `"${c.name}"`,
       `"${c.phone}"`,
       `"${c.email}"`,
-      `"${c.location}"`,
-      `"${c.zone}"`,
+      `"${c.address || ''}"`,
+      `"${c.zone || 'Delhi NCR'}"`,
       `"${c.tag}"`,
-      `"${c.status}"`,
-      c.ordersCount,
-      c.totalSpent,
+      `"${c.rfmCohort || 'Regular'}"`,
+      `"${c.dietPreference || 'Standard'}"`,
+      c.ordersCount || 0,
+      c.totalSpent || 0,
       `"${c.favoriteProduct || ''}"`,
       `"${(c.notes || '').replace(/"/g, '""')}"`
     ]);
@@ -114,7 +122,6 @@ export default function CustomersView({ onSelectCreateOrder }) {
         }
 
         let importedCount = 0;
-        // Skip header
         for (let i = 1; i < lines.length; i++) {
           const cols = lines[i].split(',').map((c) => c.replace(/^"|"$/g, '').trim());
           if (cols[1]) {
@@ -122,10 +129,11 @@ export default function CustomersView({ onSelectCreateOrder }) {
               name: cols[1],
               phone: cols[2] || '+91 98000 00000',
               email: cols[3] || `${cols[1].toLowerCase().replace(/\s+/g, '')}@example.com`,
-              location: cols[4] || 'Delhi NCR',
+              address: cols[4] || 'Delhi NCR',
               zone: cols[5] || 'South Delhi',
               tag: cols[6] || 'New',
-              notes: cols[11] || 'Imported via CSV file'
+              rfmCohort: cols[7] || 'New Prospect',
+              notes: cols[12] || 'Imported via CSV'
             });
             importedCount++;
           }
@@ -139,48 +147,50 @@ export default function CustomersView({ onSelectCreateOrder }) {
     e.target.value = '';
   };
 
-  // Add customer form handler
+  // Add Customer Submit
   const handleAddSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newCust = addCustomer({
       name: formData.get('name'),
-      email: formData.get('email'),
       phone: formData.get('phone'),
-      location: formData.get('location'),
+      email: formData.get('email'),
       zone: formData.get('zone'),
+      address: formData.get('address'),
       tag: formData.get('tag'),
-      favoriteProduct: formData.get('favoriteProduct'),
-      dietaryPreference: formData.get('dietaryPreference'),
+      rfmCohort: formData.get('tag') === 'VIP' ? 'Champion VIP' : 'New Prospect',
+      dietPreference: formData.get('dietPreference') || 'High-Protein Gym Diet',
+      favoriteProduct: formData.get('favoriteProduct') || 'The Protein Stock-Up Tub (1kg)',
       notes: formData.get('notes')
     });
-    setSelectedId(newCust.id);
     setShowAddModal(false);
+    setSelectedId(newCust.id);
   };
 
-  // Edit customer form handler
+  // Edit Customer Submit
   const handleEditSubmit = (e) => {
     e.preventDefault();
+    if (!selectedCustomer) return;
     const formData = new FormData(e.target);
     updateCustomer(selectedCustomer.id, {
       name: formData.get('name'),
-      email: formData.get('email'),
       phone: formData.get('phone'),
-      location: formData.get('location'),
+      email: formData.get('email'),
       zone: formData.get('zone'),
+      address: formData.get('address'),
       tag: formData.get('tag'),
-      favoriteProduct: formData.get('favoriteProduct'),
-      dietaryPreference: formData.get('dietaryPreference'),
+      rfmCohort: formData.get('rfmCohort') || selectedCustomer.rfmCohort,
+      dietPreference: formData.get('dietPreference') || selectedCustomer.dietPreference,
+      favoriteProduct: formData.get('favoriteProduct') || selectedCustomer.favoriteProduct,
       notes: formData.get('notes')
     });
     setShowEditModal(false);
   };
 
-  // Add note handler
   const handleAddNote = (e) => {
     e.preventDefault();
-    if (!newNoteText.trim()) return;
-    addCustomerNote(selectedCustomer.id, newNoteText.trim());
+    if (!newNoteText.trim() || !selectedCustomer) return;
+    addCustomerNote(selectedCustomer.id, newNoteText);
     setNewNoteText('');
   };
 
@@ -189,52 +199,54 @@ export default function CustomersView({ onSelectCreateOrder }) {
       {/* Header */}
       <section className="page-heading">
         <div>
-          <p className="eyebrow">AKIRA FRESH &bull; CRM DIRECTORY</p>
+          <p className="eyebrow">AKIRA FRESH DIRECTORY & RFM COHORTS</p>
           <h1>
-            Customers <span className="heading-count">{customers.length}</span>
+            Customers & LTV
+            <span className="heading-count">{customers.length} Profiles</span>
           </h1>
           <p className="subheading">
-            Cultivate loyalty with Delhi NCR meat & snack lovers.
+            Delhi NCR cold-chain customers, dietary preferences, and predictive retention insights.
           </p>
         </div>
 
         <div className="heading-actions">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImportCSV}
-            accept=".csv"
-            style={{ display: 'none' }}
-          />
-          <button
-            className="secondary-button"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload size={14} /> Import CSV
-          </button>
           <button className="secondary-button" onClick={handleExportCSV}>
             <Download size={14} /> Export CSV
           </button>
+          <button className="secondary-button" onClick={() => fileInputRef.current?.click()}>
+            <Upload size={14} /> Import CSV
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".csv"
+            onChange={handleImportCSV}
+          />
           <button className="primary-button" onClick={() => setShowAddModal(true)}>
-            <Plus size={14} /> Add Customer
+            <Plus size={15} /> Add Customer
           </button>
         </div>
       </section>
 
-      {/* Main Customers Grid */}
+      {/* Main Layout Grid */}
       <div className="customers-layout-grid">
-        {/* Left: Customer List Panel */}
+        {/* Left: Customer Directory */}
         <div className="customer-panel">
-          {/* Toolbar */}
           <div className="panel-toolbar">
             <div className="search-box">
-              <Search size={15} />
+              <Search size={14} />
               <input
                 type="text"
-                placeholder="Search by name, phone, zone..."
+                placeholder="Search by name, phone, zone, dish..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              {searchQuery && (
+                <button className="clear-search-btn" onClick={() => setSearchQuery('')}>
+                  <X size={13} />
+                </button>
+              )}
             </div>
 
             <div className="filter-row">
@@ -245,9 +257,9 @@ export default function CustomersView({ onSelectCreateOrder }) {
                   className={filterTag === tag ? 'filter-chip selected' : 'filter-chip'}
                 >
                   {tag}
-                  {tag === 'All customers' && <span>{customers.length}</span>}
-                  {tag === 'VIP' && <span>{customers.filter((c) => c.tag === 'VIP').length}</span>}
-                  {tag === 'At risk' && <span>{customers.filter((c) => c.tag === 'At risk').length}</span>}
+                  {tag === 'All customers' && <span>({customers.length})</span>}
+                  {tag === 'VIP' && <span>({customers.filter((c) => c.tag === 'VIP').length})</span>}
+                  {tag === 'At risk' && <span>({customers.filter((c) => c.tag === 'At risk').length})</span>}
                 </button>
               ))}
             </div>
@@ -255,11 +267,11 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
           {/* Table Header */}
           <div className="table-head">
-            <span>Customer</span>
+            <span>Customer & RFM</span>
             <span>Segment</span>
             <span>Orders</span>
             <span>Total Spent</span>
-            <span>Zone</span>
+            <span>Delhi NCR Zone</span>
             <span></span>
           </div>
 
@@ -270,41 +282,50 @@ export default function CustomersView({ onSelectCreateOrder }) {
                 <p>No customers match your search criteria.</p>
               </div>
             ) : (
-              filteredCustomers.map((cust) => (
-                <button
-                  key={cust.id}
-                  onClick={() => setSelectedId(cust.id)}
-                  className={
-                    selectedCustomer?.id === cust.id
-                      ? 'customer-row selected-row'
-                      : 'customer-row'
-                  }
-                >
-                  <div className="customer-cell">
-                    <div className={`customer-avatar ${cust.tone || 'coral'}`}>
-                      {cust.initials}
+              filteredCustomers.map((cust) => {
+                const initials = cust.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2);
+
+                return (
+                  <button
+                    key={cust.id}
+                    onClick={() => setSelectedId(cust.id)}
+                    className={
+                      selectedCustomer?.id === cust.id
+                        ? 'customer-row selected-row'
+                        : 'customer-row'
+                    }
+                  >
+                    <div className="customer-cell">
+                      <div className={`customer-avatar ${cust.avatarColor || 'coral'}`}>
+                        {initials}
+                      </div>
+                      <div className="customer-meta-text">
+                        <strong>{cust.name}</strong>
+                        <small>{cust.rfmCohort || cust.email}</small>
+                      </div>
                     </div>
-                    <div className="customer-meta-text">
-                      <strong>{cust.name}</strong>
-                      <small>{cust.email}</small>
+
+                    <div>
+                      <span className={`tag ${cust.tag.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {cust.tag}
+                      </span>
                     </div>
-                  </div>
 
-                  <div>
-                    <span className={`tag ${cust.tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {cust.tag}
-                    </span>
-                  </div>
+                    <span className="muted-cell">{cust.ordersCount || 0} orders</span>
 
-                  <span className="muted-cell">{cust.ordersCount} orders</span>
+                    <strong className="text-green">₹{(cust.totalSpent || 0).toLocaleString('en-IN')}</strong>
 
-                  <strong>₹{cust.totalSpent.toLocaleString('en-IN')}</strong>
+                    <span className="muted-cell">{cust.zone || 'Delhi NCR'}</span>
 
-                  <span className="muted-cell">{cust.zone || 'Delhi NCR'}</span>
-
-                  <span className="row-more">&bull;&bull;&bull;</span>
-                </button>
-              ))
+                    <span className="row-more">&bull;&bull;&bull;</span>
+                  </button>
+                );
+              })
             )}
           </div>
 
@@ -319,7 +340,10 @@ export default function CustomersView({ onSelectCreateOrder }) {
         {selectedCustomer && (
           <aside className="detail-panel">
             <div className="detail-header">
-              <p>Customer Profile</p>
+              <div className="rfm-badge-pill">
+                <Award size={12} className="text-sun" />
+                <span>{selectedCustomer.rfmCohort || 'Loyal Customer'}</span>
+              </div>
               <div className="detail-header-actions">
                 <button
                   onClick={() => setShowEditModal(true)}
@@ -343,15 +367,20 @@ export default function CustomersView({ onSelectCreateOrder }) {
             </div>
 
             <div className="profile-intro">
-              <div className={`profile-avatar ${selectedCustomer.tone || 'coral'}`}>
-                {selectedCustomer.initials}
+              <div className={`profile-avatar ${selectedCustomer.avatarColor || 'coral'}`}>
+                {selectedCustomer.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
               </div>
               <h2>{selectedCustomer.name}</h2>
               <span className={`tag ${selectedCustomer.tag.toLowerCase().replace(/\s+/g, '-')}`}>
                 {selectedCustomer.tag}
               </span>
               <p className="profile-location">
-                <MapPin size={12} /> {selectedCustomer.location}
+                <MapPin size={12} /> {selectedCustomer.zone || selectedCustomer.address || 'Delhi NCR'}
               </p>
             </div>
 
@@ -359,7 +388,7 @@ export default function CustomersView({ onSelectCreateOrder }) {
             <div className="detail-actions">
               <a
                 href={`https://wa.me/${selectedCustomer.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                  `Hi ${selectedCustomer.name}! Akira Fresh here. We have freshly blast-frozen batches of ${selectedCustomer.favoriteProduct || 'your favorites'} ready for delivery across Delhi NCR.`
+                  `Hi ${selectedCustomer.name}! Akira Fresh here 🍗 Fresh batches of ${selectedCustomer.favoriteProduct || 'your favorites'} are blast-frozen & ready for 2-hr delivery in ${selectedCustomer.zone || 'Delhi NCR'}. Can we pack an order for you?`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -378,52 +407,56 @@ export default function CustomersView({ onSelectCreateOrder }) {
                   }
                 }}
               >
-                <ShoppingBag size={14} /> New Order
+                <ShoppingBag size={14} /> Create Order
               </button>
             </div>
 
-            {/* Contact Details */}
+            {/* Dietary Preference & Contact Details */}
             <div className="detail-section">
               <div className="section-title">
-                <strong>Contact Information</strong>
+                <strong>Customer Profile & Contact</strong>
               </div>
               <div className="contact-line">
-                <Mail size={14} />
-                <span>{selectedCustomer.email}</span>
-              </div>
-              <div className="contact-line">
-                <Phone size={14} />
+                <Phone size={13} />
                 <span>{selectedCustomer.phone}</span>
               </div>
               <div className="contact-line">
-                <Heart size={14} />
-                <span>Prefers: {selectedCustomer.dietaryPreference || 'Halal & Blast Frozen'}</span>
+                <Mail size={13} />
+                <span>{selectedCustomer.email}</span>
               </div>
+              <div className="contact-line">
+                <MapPin size={13} />
+                <span>{selectedCustomer.address || selectedCustomer.zone}</span>
+              </div>
+              {selectedCustomer.dietPreference && (
+                <div className="diet-pill-box">
+                  <Flame size={12} className="text-coral" />
+                  <span>Diet: <strong>{selectedCustomer.dietPreference}</strong></span>
+                </div>
+              )}
             </div>
 
-            {/* Customer Snapshot */}
+            {/* Snapshot Metrics */}
             <div className="detail-section">
               <div className="section-title">
-                <strong>Customer Snapshot</strong>
+                <strong>Lifetime Value (LTV) Metrics</strong>
               </div>
               <div className="snapshot-grid">
                 <div>
+                  <span>Total Spent</span>
+                  <strong className="text-green">₹{(selectedCustomer.totalSpent || 0).toLocaleString('en-IN')}</strong>
+                </div>
+                <div>
                   <span>Total Orders</span>
-                  <strong>{selectedCustomer.ordersCount}</strong>
+                  <strong>{selectedCustomer.ordersCount || 0} orders</strong>
                 </div>
                 <div>
-                  <span>Lifetime Spent</span>
-                  <strong>₹{selectedCustomer.totalSpent.toLocaleString('en-IN')}</strong>
+                  <span>Avg Order (AOV)</span>
+                  <strong>₹{Math.round((selectedCustomer.totalSpent || 0) / Math.max(1, selectedCustomer.ordersCount || 1))}</strong>
                 </div>
                 <div>
-                  <span>Favorite Snack</span>
-                  <strong className="fav-product-text">
-                    {selectedCustomer.favoriteProduct || 'Chicken Momos'}
-                  </strong>
-                </div>
-                <div>
-                  <span>Delivery Zone</span>
-                  <strong>{selectedCustomer.zone || 'Delhi NCR'}</strong>
+                  <span>Favorite Dish</span>
+                  <strong className="fav-product-text">{selectedCustomer.favoriteProduct || 'Chicken Momos'}</strong>
                 </div>
               </div>
             </div>
@@ -434,23 +467,23 @@ export default function CustomersView({ onSelectCreateOrder }) {
                 <strong>Order History ({customerOrders.length})</strong>
               </div>
               {customerOrders.length === 0 ? (
-                <small className="muted-text">No previous orders on record.</small>
+                <p className="settings-note">No orders placed yet.</p>
               ) : (
                 <div className="customer-order-timeline">
-                  {customerOrders.map((ord) => (
-                    <div key={ord.id} className="timeline-order-item">
+                  {customerOrders.map((o) => (
+                    <div key={o.id} className="timeline-order-item">
                       <div className="timeline-order-top">
-                        <strong>#{ord.id}</strong>
-                        <span className="order-amt">₹{ord.totalAmount}</span>
+                        <strong>#{o.id}</strong>
+                        <span className="order-amt">₹{o.totalAmount}</span>
                       </div>
-                      <small className="timeline-order-items">
-                        {ord.items.map((i) => `${i.qty}x ${i.name}`).join(', ')}
-                      </small>
+                      <span className="timeline-order-items">
+                        {o.items.map((i) => `${i.qty}x ${i.name}`).join(', ')}
+                      </span>
                       <div className="timeline-order-bottom">
-                        <span className={`status-badge-small ${ord.status.toLowerCase().replace(/[\s-]/g, '_')}`}>
-                          {ord.status}
+                        <span>{new Date(o.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                        <span className={`status-badge-small ${o.status.toLowerCase().replace(/[\s-]/g, '_')}`}>
+                          {o.status}
                         </span>
-                        <small>{new Date(ord.createdAt).toLocaleDateString()}</small>
                       </div>
                     </div>
                   ))}
@@ -461,21 +494,20 @@ export default function CustomersView({ onSelectCreateOrder }) {
             {/* Team Notes */}
             <div className="detail-section note-section">
               <div className="section-title">
-                <strong>Team Notes & Delivery Preferences</strong>
+                <strong>Delivery & Team Notes</strong>
               </div>
-              <div className="notes-box">
-                <p>{selectedCustomer.notes || 'No notes added yet.'}</p>
-              </div>
-
+              {selectedCustomer.notes && (
+                <div className="notes-box">{selectedCustomer.notes}</div>
+              )}
               <form onSubmit={handleAddNote} className="add-note-form">
                 <input
                   type="text"
-                  placeholder="Add quick team note..."
+                  placeholder="Add delivery slot or dietary preference..."
                   value={newNoteText}
                   onChange={(e) => setNewNoteText(e.target.value)}
                 />
-                <button type="submit" className="note-submit-btn" title="Add Note">
-                  <Send size={13} />
+                <button type="submit" className="note-submit-btn">
+                  <Plus size={14} />
                 </button>
               </form>
             </div>
@@ -485,145 +517,161 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
       {/* Add Customer Modal */}
       {showAddModal && (
-        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)}>
-          <form className="modal" onSubmit={handleAddSubmit}>
-            <button type="button" className="modal-close" onClick={() => setShowAddModal(false)}>
-              <X size={20} />
+        <div className="modal-backdrop" onClick={() => setShowAddModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAddModal(false)}>
+              <X size={18} />
             </button>
-            <p className="eyebrow">NEW RELATIONSHIP</p>
-            <h2>Add Customer</h2>
-            <p className="modal-copy">Create a profile for Akira Fresh cold-chain delivery.</p>
+            <h2>Add New Customer</h2>
+            <p className="modal-copy">Create a profile for Delhi NCR cold-chain dispatch.</p>
 
-            <div className="form-group">
-              <label>Full Name *</label>
-              <input name="name" required placeholder="e.g. Priya Sharma" />
-            </div>
-
-            <div className="form-row">
+            <form onSubmit={handleAddSubmit}>
               <div className="form-group">
-                <label>Email Address *</label>
-                <input name="email" type="email" required placeholder="priya@example.com" />
+                <label>Customer Full Name</label>
+                <input name="name" type="text" required placeholder="e.g. Vikram Malhotra" />
               </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>WhatsApp Phone</label>
+                  <input name="phone" type="tel" required placeholder="+91 98100 12345" />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input name="email" type="email" required placeholder="vikram@example.com" />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Delhi NCR Hub / Zone</label>
+                  <select name="zone" defaultValue="Gurugram (Cyber City & DLF)">
+                    <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
+                    <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
+                    <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
+                    <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
+                    <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
+                    <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Customer Segment</label>
+                  <select name="tag" defaultValue="New">
+                    <option value="VIP">VIP</option>
+                    <option value="Repeat buyer">Repeat Buyer</option>
+                    <option value="New">New Customer</option>
+                    <option value="At risk">At Risk</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>Phone Number *</label>
-                <input name="phone" required placeholder="+91 98123 45678" />
+                <label>Delivery Address</label>
+                <input name="address" type="text" placeholder="Flat / House No., Apartment, Sector, City" />
               </div>
-            </div>
 
-            <div className="form-row">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Dietary Preference</label>
+                  <input name="dietPreference" type="text" placeholder="e.g. High-Protein Gym Diet" />
+                </div>
+                <div className="form-group">
+                  <label>Favorite Product</label>
+                  <input name="favoriteProduct" type="text" placeholder="e.g. The Protein Stock-Up Tub (1kg)" />
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>Delhi NCR Zone *</label>
-                <select name="zone" defaultValue="South Delhi">
-                  <option value="South Delhi">South Delhi</option>
-                  <option value="Gurugram">Gurugram</option>
-                  <option value="Noida">Noida</option>
-                  <option value="West Delhi">West Delhi</option>
-                  <option value="Ghaziabad">Ghaziabad</option>
-                  <option value="North Delhi">North Delhi</option>
-                </select>
+                <label>Delivery Instructions / Notes</label>
+                <textarea name="notes" rows={2} placeholder="Gate pass required, call before delivery..."></textarea>
               </div>
-              <div className="form-group">
-                <label>Customer Segment</label>
-                <select name="tag" defaultValue="New">
-                  <option value="New">New</option>
-                  <option value="Repeat buyer">Repeat buyer</option>
-                  <option value="VIP">VIP</option>
-                  <option value="At risk">At risk</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="form-group">
-              <label>Delivery Address / Landmark</label>
-              <input name="location" placeholder="e.g. Magnolias, DLF Phase 5, Gurugram" />
-            </div>
-
-            <div className="form-group">
-              <label>Favorite Akira Fresh Snack</label>
-              <input name="favoriteProduct" placeholder="e.g. Chicken Burger Patty" />
-            </div>
-
-            <div className="form-group">
-              <label>Dietary & Delivery Notes</label>
-              <textarea name="notes" rows={3} placeholder="e.g. Sunday delivery preferred. Extra chutney." />
-            </div>
-
-            <button type="submit" className="primary-button full-width">
-              Create Customer Profile <ArrowRight size={14} />
-            </button>
-          </form>
+              <button type="submit" className="primary-button full-width">
+                <Check size={16} /> Save Customer
+              </button>
+            </form>
+          </div>
         </div>
       )}
 
       {/* Edit Customer Modal */}
       {showEditModal && selectedCustomer && (
-        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowEditModal(false)}>
-          <form className="modal" onSubmit={handleEditSubmit}>
-            <button type="button" className="modal-close" onClick={() => setShowEditModal(false)}>
-              <X size={20} />
+        <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowEditModal(false)}>
+              <X size={18} />
             </button>
-            <p className="eyebrow">UPDATE PROFILE</p>
-            <h2>Edit {selectedCustomer.name}</h2>
-            <p className="modal-copy">Update contact details and preferences.</p>
+            <h2>Edit Customer Profile</h2>
+            <p className="modal-copy">Update contact, address, or dietary tags.</p>
 
-            <div className="form-group">
-              <label>Full Name</label>
-              <input name="name" defaultValue={selectedCustomer.name} required />
-            </div>
-
-            <div className="form-row">
+            <form onSubmit={handleEditSubmit}>
               <div className="form-group">
-                <label>Email Address</label>
-                <input name="email" type="email" defaultValue={selectedCustomer.email} required />
+                <label>Full Name</label>
+                <input name="name" type="text" required defaultValue={selectedCustomer.name} />
               </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>WhatsApp Phone</label>
+                  <input name="phone" type="tel" required defaultValue={selectedCustomer.phone} />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input name="email" type="email" required defaultValue={selectedCustomer.email} />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Delhi NCR Zone</label>
+                  <select name="zone" defaultValue={selectedCustomer.zone || 'Gurugram (Cyber City & DLF)'}>
+                    <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
+                    <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
+                    <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
+                    <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
+                    <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
+                    <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Segment Tag</label>
+                  <select name="tag" defaultValue={selectedCustomer.tag}>
+                    <option value="VIP">VIP</option>
+                    <option value="Repeat buyer">Repeat Buyer</option>
+                    <option value="New">New Customer</option>
+                    <option value="At risk">At Risk</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>Phone Number</label>
-                <input name="phone" defaultValue={selectedCustomer.phone} required />
+                <label>Delivery Address</label>
+                <input name="address" type="text" defaultValue={selectedCustomer.address} />
               </div>
-            </div>
 
-            <div className="form-row">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Dietary Preference</label>
+                  <input name="dietPreference" type="text" defaultValue={selectedCustomer.dietPreference} />
+                </div>
+                <div className="form-group">
+                  <label>Favorite Product</label>
+                  <input name="favoriteProduct" type="text" defaultValue={selectedCustomer.favoriteProduct} />
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>Delhi NCR Zone</label>
-                <select name="zone" defaultValue={selectedCustomer.zone || 'South Delhi'}>
-                  <option value="South Delhi">South Delhi</option>
-                  <option value="Gurugram">Gurugram</option>
-                  <option value="Noida">Noida</option>
-                  <option value="West Delhi">West Delhi</option>
-                  <option value="Ghaziabad">Ghaziabad</option>
-                  <option value="North Delhi">North Delhi</option>
-                </select>
+                <label>Notes</label>
+                <textarea name="notes" rows={2} defaultValue={selectedCustomer.notes}></textarea>
               </div>
-              <div className="form-group">
-                <label>Segment Tag</label>
-                <select name="tag" defaultValue={selectedCustomer.tag}>
-                  <option value="New">New</option>
-                  <option value="Repeat buyer">Repeat buyer</option>
-                  <option value="VIP">VIP</option>
-                  <option value="At risk">At risk</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="form-group">
-              <label>Delivery Address</label>
-              <input name="location" defaultValue={selectedCustomer.location} />
-            </div>
-
-            <div className="form-group">
-              <label>Favorite Product</label>
-              <input name="favoriteProduct" defaultValue={selectedCustomer.favoriteProduct} />
-            </div>
-
-            <div className="form-group">
-              <label>Notes</label>
-              <textarea name="notes" rows={3} defaultValue={selectedCustomer.notes} />
-            </div>
-
-            <button type="submit" className="primary-button full-width">
-              Save Changes <Check size={14} />
-            </button>
-          </form>
+              <button type="submit" className="primary-button full-width">
+                <Check size={16} /> Update Customer Profile
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

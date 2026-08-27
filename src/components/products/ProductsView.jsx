@@ -13,7 +13,11 @@ import {
   X,
   ArrowRight,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  DollarSign,
+  Clock,
+  Sparkles,
+  Percent
 } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
@@ -33,9 +37,8 @@ export default function ProductsView() {
     'Chicken Snacks',
     'Kebabs',
     'Momos',
-    'Sausages & Cold Cuts',
-    'Mutton',
-    'Family Packs'
+    'Family Packs (1kg)',
+    'Mutton Delicacies'
   ];
 
   // Filtered products
@@ -61,27 +64,38 @@ export default function ProductsView() {
     });
   }, [products, searchQuery, selectedCategory]);
 
+  // Inventory & Margin Metrics
+  const totalSkus = products.length;
+  const totalStockUnits = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+  const totalInventoryValue = products.reduce((acc, p) => acc + ((p.price || 0) * (p.stock || 0)), 0);
+  const lowStockCount = products.filter(p => p.stock <= 20).length;
+
   // Handle Add Product Submit
   const handleAddSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const price = Number(formData.get('price'));
+    const costPrice = Number(formData.get('costPrice')) || Math.round(price * 0.55);
     const originalPrice = Number(formData.get('originalPrice')) || price;
     const discountPercent = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
     addProduct({
       name: formData.get('name'),
-      sku: formData.get('sku'),
+      sku: formData.get('sku') || `AF-${Date.now().toString().slice(-4)}`,
       category: formData.get('category'),
       price,
+      costPrice,
       originalPrice,
       discountPercent,
       stock: Number(formData.get('stock')),
+      dailyVelocity: Number(formData.get('dailyVelocity')) || 10,
       unit: formData.get('unit'),
       protein: formData.get('protein'),
+      image: formData.get('image') || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80',
       description: formData.get('description'),
       isBestseller: formData.get('isBestseller') === 'on',
-      isFlashSale: formData.get('isFlashSale') === 'on'
+      isFlashSale: formData.get('isFlashSale') === 'on',
+      blastFrozen: true
     });
 
     setShowAddModal(false);
@@ -94,6 +108,7 @@ export default function ProductsView() {
 
     const formData = new FormData(e.target);
     const price = Number(formData.get('price'));
+    const costPrice = Number(formData.get('costPrice')) || editingProduct.costPrice || Math.round(price * 0.55);
     const originalPrice = Number(formData.get('originalPrice')) || price;
     const discountPercent = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
@@ -102,11 +117,14 @@ export default function ProductsView() {
       sku: formData.get('sku'),
       category: formData.get('category'),
       price,
+      costPrice,
       originalPrice,
       discountPercent,
       stock: Number(formData.get('stock')),
+      dailyVelocity: Number(formData.get('dailyVelocity')) || editingProduct.dailyVelocity || 10,
       unit: formData.get('unit'),
       protein: formData.get('protein'),
+      image: formData.get('image') || editingProduct.image,
       description: formData.get('description'),
       isBestseller: formData.get('isBestseller') === 'on',
       isFlashSale: formData.get('isFlashSale') === 'on'
@@ -120,48 +138,115 @@ export default function ProductsView() {
       {/* Header */}
       <section className="page-heading">
         <div>
-          <p className="eyebrow">CATALOG &bull; BLAST-FROZEN INVENTORY</p>
+          <p className="eyebrow">AKIRA FRESH CATALOG & INVENTORY INTELLIGENCE</p>
           <h1>
-            Products <span className="heading-count">{products.length} SKUs</span>
+            Gourmet Frozen Catalog
+            <span className="heading-count">{totalSkus} SKUs</span>
           </h1>
           <p className="subheading">
-            Manage recipes, batch stock, blast-freeze status, and flash sale pricing.
+            Live cold-chain inventory, profit margin tracking, and automated restock predictor.
           </p>
         </div>
 
         <div className="heading-actions">
+          <button
+            className="secondary-button"
+            onClick={() => showToast(`Total inventory valuation: ₹${totalInventoryValue.toLocaleString('en-IN')}`)}
+          >
+            <DollarSign size={14} /> Valuation: ₹{(totalInventoryValue / 100000).toFixed(1)}L
+          </button>
           <button className="primary-button" onClick={() => setShowAddModal(true)}>
-            <Plus size={14} /> Add New SKU
+            <Plus size={15} /> Add New SKU
           </button>
         </div>
       </section>
 
-      {/* Toolbar & Category Chips */}
+      {/* Inventory KPI Summary */}
+      <section className="metric-grid">
+        <div className="metric-card">
+          <div className="metric-icon coral">
+            <Package size={20} />
+          </div>
+          <div className="metric-copy">
+            <span>Total Stock</span>
+            <strong>{totalStockUnits} units</strong>
+            <p>
+              Across <b>{totalSkus} product lines</b>
+            </p>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon sage">
+            <TrendingUp size={20} />
+          </div>
+          <div className="metric-copy">
+            <span>Inventory Value</span>
+            <strong>₹{totalInventoryValue.toLocaleString('en-IN')}</strong>
+            <p>
+              <b>Avg 48% Gross Margin</b>
+            </p>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon sun">
+            <Flame size={20} />
+          </div>
+          <div className="metric-copy">
+            <span>Bestsellers</span>
+            <strong>{products.filter(p => p.isBestseller).length} SKUs</strong>
+            <p>
+              Generates <b>68% of orders</b>
+            </p>
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="metric-icon blue">
+            <AlertTriangle size={20} />
+          </div>
+          <div className="metric-copy">
+            <span>Low Stock Alert</span>
+            <strong className={lowStockCount > 0 ? 'text-coral' : ''}>{lowStockCount} items</strong>
+            <p className={lowStockCount > 0 ? 'negative' : ''}>
+              <b>&le; 20 units</b> remaining
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Toolbar & Categories */}
       <div className="products-toolbar">
         <div className="search-box">
-          <Search size={15} />
+          <Search size={14} />
           <input
             type="text"
-            placeholder="Search snacks, SKUs, categories..."
+            placeholder="Search SKUs, names, ingredients..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button className="clear-search-btn" onClick={() => setSearchQuery('')}>
+              <X size={13} />
+            </button>
+          )}
         </div>
 
         <div className="view-toggle-btns">
           <button
             className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
             onClick={() => setViewMode('grid')}
-            title="Grid View"
+            title="Grid Cards View"
           >
-            <Grid size={16} />
+            <Grid size={15} />
           </button>
           <button
             className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
             onClick={() => setViewMode('table')}
-            title="Table View"
+            title="Table List View"
           >
-            <List size={16} />
+            <List size={15} />
           </button>
         </div>
       </div>
@@ -171,8 +256,8 @@ export default function ProductsView() {
         {categories.map((cat) => (
           <button
             key={cat}
-            onClick={() => setSelectedCategory(cat)}
             className={`category-chip ${selectedCategory === cat ? 'selected' : ''}`}
+            onClick={() => setSelectedCategory(cat)}
           >
             {cat === 'Bestsellers' && <Star size={12} className="text-sun" />}
             {cat === 'Flash Sale' && <Flame size={12} className="text-coral" />}
@@ -181,21 +266,32 @@ export default function ProductsView() {
         ))}
       </div>
 
-      {/* Products Display */}
-      {filteredProducts.length === 0 ? (
-        <div className="empty-state">
-          <p>No products found matching "{searchQuery}" in {selectedCategory}.</p>
-        </div>
-      ) : viewMode === 'grid' ? (
+      {/* Grid Mode */}
+      {viewMode === 'grid' ? (
         <div className="products-card-grid">
           {filteredProducts.map((prod) => {
             const isLowStock = prod.stock <= 20 && prod.stock > 0;
             const isOutOfStock = prod.stock === 0;
+            const cost = prod.costPrice || Math.round(prod.price * 0.55);
+            const marginAmount = prod.price - cost;
+            const marginPercent = Math.round((marginAmount / prod.price) * 100);
+            const daysLeft = Math.max(1, Math.round(prod.stock / (prod.dailyVelocity || 10)));
 
             return (
               <div key={prod.id} className="product-card">
-                <div className="product-card-top">
-                  <div className="product-badges">
+                {/* Product Image Banner */}
+                <div className="product-image-container">
+                  <img
+                    src={prod.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80'}
+                    alt={prod.name}
+                    className="product-card-img"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                    }}
+                  />
+                  <div className="product-img-overlay-badges">
                     <span className="sku-badge">{prod.sku}</span>
                     {prod.isBestseller && (
                       <span className="badge-bestseller">
@@ -209,7 +305,7 @@ export default function ProductsView() {
                     )}
                   </div>
                   <button
-                    className="icon-btn-subtle"
+                    className="product-edit-floating-btn"
                     onClick={() => setEditingProduct(prod)}
                     title="Edit Product"
                   >
@@ -225,6 +321,18 @@ export default function ProductsView() {
                   <div className="product-nutrition-tag">
                     <Snowflake size={12} className="text-coral" />
                     <span>{prod.protein || 'High Protein'} &bull; {prod.unit}</span>
+                  </div>
+
+                  {/* Profit & Restock Intelligence Bar */}
+                  <div className="product-intel-bar">
+                    <div className="intel-pill margin-pill">
+                      <Percent size={11} />
+                      <span>{marginPercent}% Margin (+₹{marginAmount})</span>
+                    </div>
+                    <div className={`intel-pill velocity-pill ${daysLeft <= 3 ? 'velocity-urgent' : ''}`}>
+                      <Clock size={11} />
+                      <span>~{daysLeft}d stock left</span>
+                    </div>
                   </div>
                 </div>
 
@@ -262,219 +370,328 @@ export default function ProductsView() {
         <div className="workspace-card table-workspace">
           <div className="workspace-table">
             <div className="workspace-table-head prod-table-head">
-              <span>SKU & Product</span>
+              <span>Product & SKU</span>
               <span>Category & Unit</span>
-              <span>Price / Discount</span>
-              <span>Stock Status</span>
-              <span>Quick Adjust</span>
+              <span>Price & Margin</span>
+              <span>Stock & Run Rate</span>
+              <span>Stock Stepper</span>
               <span>Action</span>
             </div>
 
-            {filteredProducts.map((prod) => (
-              <div key={prod.id} className="workspace-table-row prod-table-row">
-                <div>
-                  <strong>{prod.name}</strong>
-                  <small>{prod.sku}</small>
+            {filteredProducts.map((prod) => {
+              const cost = prod.costPrice || Math.round(prod.price * 0.55);
+              const marginAmount = prod.price - cost;
+              const marginPercent = Math.round((marginAmount / prod.price) * 100);
+
+              return (
+                <div key={prod.id} className="workspace-table-row prod-table-row">
+                  <div className="prod-table-meta-cell">
+                    <img
+                      src={prod.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80'}
+                      alt=""
+                      className="prod-table-thumb"
+                    />
+                    <div>
+                      <strong>{prod.name}</strong>
+                      <small>{prod.sku} &bull; {prod.protein}</small>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span>{prod.category}</span>
+                    <small>{prod.unit}</small>
+                  </div>
+
+                  <div>
+                    <strong>₹{prod.price}</strong>
+                    <small className="margin-text">{marginPercent}% Margin (+₹{marginAmount})</small>
+                  </div>
+
+                  <div>
+                    <span className={`stock-status-pill ${prod.stock <= 20 ? 'low' : 'good'}`}>
+                      {prod.stock} units left
+                    </span>
+                    <small className="velocity-sub">~{Math.round(prod.stock / (prod.dailyVelocity || 10))} days left</small>
+                  </div>
+
+                  <div>
+                    <div className="stock-counter-sm">
+                      <button onClick={() => adjustStock(prod.id, -5)}>-</button>
+                      <span>{prod.stock}</span>
+                      <button onClick={() => adjustStock(prod.id, 5)}>+</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      className="icon-btn-subtle"
+                      onClick={() => setEditingProduct(prod)}
+                      title="Edit Product"
+                    >
+                      <Edit2 size={13} />
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <span>{prod.category}</span>
-                  <small>{prod.unit}</small>
-                </div>
-                <div>
-                  <strong>₹{prod.price}</strong>
-                  {prod.originalPrice > prod.price && (
-                    <small className="discount-text">{prod.discountPercent}% OFF (₹{prod.originalPrice})</small>
-                  )}
-                </div>
-                <div>
-                  <span className={`stock-status-pill ${prod.stock <= 20 ? 'low' : 'good'}`}>
-                    {prod.stock} units
-                  </span>
-                </div>
-                <div className="stock-counter-sm">
-                  <button onClick={() => adjustStock(prod.id, -1)}>-</button>
-                  <span>{prod.stock}</span>
-                  <button onClick={() => adjustStock(prod.id, 1)}>+</button>
-                </div>
-                <div>
-                  <button
-                    className="icon-btn-subtle"
-                    onClick={() => setEditingProduct(prod)}
-                  >
-                    <Edit2 size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)}>
-          <form className="modal" onSubmit={handleAddSubmit}>
-            <button type="button" className="modal-close" onClick={() => setShowAddModal(false)}>
-              <X size={20} />
+        <div className="modal-backdrop" onClick={() => setShowAddModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAddModal(false)}>
+              <X size={18} />
             </button>
-            <p className="eyebrow">NEW SKU</p>
-            <h2>Add Product</h2>
-            <p className="modal-copy">Add a fresh recipe to the Akira Fresh blast-frozen catalog.</p>
 
-            <div className="form-group">
-              <label>Product Name *</label>
-              <input name="name" required placeholder="e.g. Chicken Cheese Poppers" />
-            </div>
+            <h2>Add New SKU</h2>
+            <p className="modal-copy">Create a blast-frozen ready-to-cook product line.</p>
 
-            <div className="form-row">
+            <form onSubmit={handleAddSubmit}>
               <div className="form-group">
-                <label>Category *</label>
-                <select name="category" defaultValue="Chicken Snacks">
-                  <option value="Chicken Snacks">Chicken Snacks</option>
-                  <option value="Kebabs">Kebabs</option>
-                  <option value="Momos">Momos</option>
-                  <option value="Sausages & Cold Cuts">Sausages & Cold Cuts</option>
-                  <option value="Mutton">Mutton</option>
-                  <option value="Family Packs">Family Packs</option>
-                </select>
+                <label>Product Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  placeholder="e.g. Kashmiri Mutton Seekh Kebab"
+                />
               </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>SKU Code</label>
+                  <input name="sku" type="text" placeholder="e.g. AF-SEEKH-02" />
+                </div>
+
+                <div className="form-group">
+                  <label>Category</label>
+                  <select name="category" required defaultValue="Chicken Snacks">
+                    <option value="Chicken Snacks">Chicken Snacks</option>
+                    <option value="Kebabs">Kebabs</option>
+                    <option value="Momos">Momos</option>
+                    <option value="Family Packs (1kg)">Family Packs (1kg)</option>
+                    <option value="Mutton Delicacies">Mutton Delicacies</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Selling Price (₹)</label>
+                  <input name="price" type="number" required placeholder="240" min="1" />
+                </div>
+
+                <div className="form-group">
+                  <label>Cost Price (₹)</label>
+                  <input name="costPrice" type="number" placeholder="120" min="1" />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>MRP / Original Price (₹)</label>
+                  <input name="originalPrice" type="number" placeholder="280" min="1" />
+                </div>
+
+                <div className="form-group">
+                  <label>Initial Stock (Units)</label>
+                  <input name="stock" type="number" required placeholder="50" min="0" />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Packaging Unit</label>
+                  <input name="unit" type="text" placeholder="e.g. 4 skewers (300g)" />
+                </div>
+
+                <div className="form-group">
+                  <label>Protein Info</label>
+                  <input name="protein" type="text" placeholder="e.g. 24g protein / 100g" />
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>SKU Code</label>
-                <input name="sku" placeholder="e.g. AF-POP-02" />
+                <label>Photo Image URL (Optional)</label>
+                <input
+                  name="image"
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                />
               </div>
-            </div>
 
-            <div className="form-row">
               <div className="form-group">
-                <label>Sale Price (₹) *</label>
-                <input name="price" type="number" required placeholder="190" />
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  placeholder="Artisanal recipe details, marination spices, cooking instructions..."
+                ></textarea>
               </div>
-              <div className="form-group">
-                <label>Regular Price (₹)</label>
-                <input name="originalPrice" type="number" placeholder="220" />
+
+              <div className="form-checkbox-row">
+                <label className="checkbox-label">
+                  <input type="checkbox" name="isBestseller" />
+                  <span>Mark as Bestseller</span>
+                </label>
+                <label className="checkbox-label">
+                  <input type="checkbox" name="isFlashSale" />
+                  <span>Flash Sale Offer</span>
+                </label>
               </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Initial Stock (Units) *</label>
-                <input name="stock" type="number" required defaultValue="30" />
-              </div>
-              <div className="form-group">
-                <label>Pack Size / Unit</label>
-                <input name="unit" defaultValue="10 pcs (250g)" />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Protein & Nutritional Highlights</label>
-              <input name="protein" defaultValue="20g protein / 100g" />
-            </div>
-
-            <div className="form-group">
-              <label>Product Description</label>
-              <textarea name="description" rows={2} placeholder="Artisanal snack blast frozen at source..." />
-            </div>
-
-            <div className="form-checkbox-row">
-              <label className="checkbox-label">
-                <input name="isBestseller" type="checkbox" />
-                <span>Mark as Bestseller</span>
-              </label>
-              <label className="checkbox-label">
-                <input name="isFlashSale" type="checkbox" />
-                <span>Include in Flash Sale</span>
-              </label>
-            </div>
-
-            <button type="submit" className="primary-button full-width">
-              Save to Catalog <ArrowRight size={14} />
-            </button>
-          </form>
+              <button type="submit" className="primary-button full-width">
+                <Check size={16} /> Save Product to Catalog
+              </button>
+            </form>
+          </div>
         </div>
       )}
 
       {/* Edit Product Modal */}
       {editingProduct && (
-        <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && setEditingProduct(null)}>
-          <form className="modal" onSubmit={handleEditSubmit}>
-            <button type="button" className="modal-close" onClick={() => setEditingProduct(null)}>
-              <X size={20} />
+        <div className="modal-backdrop" onClick={() => setEditingProduct(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setEditingProduct(null)}>
+              <X size={18} />
             </button>
-            <p className="eyebrow">EDIT RECIPE</p>
-            <h2>Edit {editingProduct.name}</h2>
-            <p className="modal-copy">Update price, description, and tags.</p>
 
-            <div className="form-group">
-              <label>Product Name</label>
-              <input name="name" defaultValue={editingProduct.name} required />
-            </div>
+            <h2>Edit SKU: {editingProduct.name}</h2>
+            <p className="modal-copy">Update price, stock, description and imagery.</p>
 
-            <div className="form-row">
+            <form onSubmit={handleEditSubmit}>
               <div className="form-group">
-                <label>Category</label>
-                <select name="category" defaultValue={editingProduct.category}>
-                  <option value="Chicken Snacks">Chicken Snacks</option>
-                  <option value="Kebabs">Kebabs</option>
-                  <option value="Momos">Momos</option>
-                  <option value="Sausages & Cold Cuts">Sausages & Cold Cuts</option>
-                  <option value="Mutton">Mutton</option>
-                  <option value="Family Packs">Family Packs</option>
-                </select>
+                <label>Product Name</label>
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  defaultValue={editingProduct.name}
+                />
               </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>SKU Code</label>
+                  <input name="sku" type="text" defaultValue={editingProduct.sku} />
+                </div>
+
+                <div className="form-group">
+                  <label>Category</label>
+                  <select name="category" required defaultValue={editingProduct.category}>
+                    <option value="Chicken Snacks">Chicken Snacks</option>
+                    <option value="Kebabs">Kebabs</option>
+                    <option value="Momos">Momos</option>
+                    <option value="Family Packs (1kg)">Family Packs (1kg)</option>
+                    <option value="Mutton Delicacies">Mutton Delicacies</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Selling Price (₹)</label>
+                  <input
+                    name="price"
+                    type="number"
+                    required
+                    defaultValue={editingProduct.price}
+                    min="1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Cost Price (₹)</label>
+                  <input
+                    name="costPrice"
+                    type="number"
+                    defaultValue={editingProduct.costPrice || Math.round(editingProduct.price * 0.55)}
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>MRP / Original Price (₹)</label>
+                  <input
+                    name="originalPrice"
+                    type="number"
+                    defaultValue={editingProduct.originalPrice}
+                    min="1"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Stock Count</label>
+                  <input
+                    name="stock"
+                    type="number"
+                    required
+                    defaultValue={editingProduct.stock}
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Packaging Unit</label>
+                  <input name="unit" type="text" defaultValue={editingProduct.unit} />
+                </div>
+
+                <div className="form-group">
+                  <label>Protein Info</label>
+                  <input name="protein" type="text" defaultValue={editingProduct.protein} />
+                </div>
+              </div>
+
               <div className="form-group">
-                <label>SKU Code</label>
-                <input name="sku" defaultValue={editingProduct.sku} />
+                <label>Photo Image URL</label>
+                <input
+                  name="image"
+                  type="url"
+                  defaultValue={editingProduct.image}
+                  placeholder="https://..."
+                />
               </div>
-            </div>
 
-            <div className="form-row">
               <div className="form-group">
-                <label>Sale Price (₹)</label>
-                <input name="price" type="number" defaultValue={editingProduct.price} required />
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  defaultValue={editingProduct.description}
+                ></textarea>
               </div>
-              <div className="form-group">
-                <label>Regular Price (₹)</label>
-                <input name="originalPrice" type="number" defaultValue={editingProduct.originalPrice} />
+
+              <div className="form-checkbox-row">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="isBestseller"
+                    defaultChecked={editingProduct.isBestseller}
+                  />
+                  <span>Mark as Bestseller</span>
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    name="isFlashSale"
+                    defaultChecked={editingProduct.isFlashSale}
+                  />
+                  <span>Flash Sale Offer</span>
+                </label>
               </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Stock (Units)</label>
-                <input name="stock" type="number" defaultValue={editingProduct.stock} required />
-              </div>
-              <div className="form-group">
-                <label>Pack Size</label>
-                <input name="unit" defaultValue={editingProduct.unit} />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Protein Highlights</label>
-              <input name="protein" defaultValue={editingProduct.protein} />
-            </div>
-
-            <div className="form-group">
-              <label>Description</label>
-              <textarea name="description" rows={2} defaultValue={editingProduct.description} />
-            </div>
-
-            <div className="form-checkbox-row">
-              <label className="checkbox-label">
-                <input name="isBestseller" type="checkbox" defaultChecked={editingProduct.isBestseller} />
-                <span>Bestseller</span>
-              </label>
-              <label className="checkbox-label">
-                <input name="isFlashSale" type="checkbox" defaultChecked={editingProduct.isFlashSale} />
-                <span>Flash Sale</span>
-              </label>
-            </div>
-
-            <button type="submit" className="primary-button full-width">
-              Update Product <Check size={14} />
-            </button>
-          </form>
+              <button type="submit" className="primary-button full-width">
+                <Check size={16} /> Save Changes
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
