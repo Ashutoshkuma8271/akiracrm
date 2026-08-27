@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
   Plus,
@@ -28,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
-export default function CustomersView({ onSelectCreateOrder }) {
+export default function CustomersView({ onSelectCreateOrder, initialSearchQuery = '' }) {
   const {
     customers,
     orders,
@@ -41,12 +42,18 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
   const [selectedId, setSelectedId] = useState(customers[0]?.id || null);
   const [mobileViewMode, setMobileViewMode] = useState('list'); // 'list' | 'detail'
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
   const [filterTag, setFilterTag] = useState('All customers');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [newNoteText, setNewNoteText] = useState('');
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery]);
 
   // Filtered customers
   const filteredCustomers = useMemo(() => {
@@ -402,7 +409,7 @@ export default function CustomersView({ onSelectCreateOrder }) {
             <div className="detail-actions">
               <a
                 href={`https://wa.me/${selectedCustomer.phone?.replace(/[^0-9]/g, '') || ''}?text=${encodeURIComponent(
-                  `Hi ${selectedCustomer.name}! Akira Fresh here 🍗 Fresh batches of ${selectedCustomer.favoriteProduct || 'your favorites'} are blast-frozen & ready for 2-hr delivery in ${selectedCustomer.zone || 'Delhi NCR'}. Can we pack an order for you?`
+                  `Hi ${selectedCustomer.name}! Akira Fresh here 🍗 Fresh batches of ${selectedCustomer.favoriteProduct || 'your favorites'} are blast-frozen & ready for 2-hr delivery in ${selectedCustomer.zone || 'Delhi NCR'}. Can we pack an order for you? https://akirafresh.in`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -530,164 +537,182 @@ export default function CustomersView({ onSelectCreateOrder }) {
       </div>
 
       {/* Add Customer Modal */}
-      {showAddModal && (
-        <div className="modal-backdrop" onClick={() => setShowAddModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddModal(false)}>
-              <X size={18} />
-            </button>
-            <h2>Add New Customer</h2>
-            <p className="modal-copy">Create a profile for Delhi NCR cold-chain dispatch.</p>
-
-            <form onSubmit={handleAddSubmit}>
-              <div className="form-group">
-                <label>Customer Full Name</label>
-                <input name="name" type="text" required placeholder="e.g. Vikram Malhotra" />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>WhatsApp Phone</label>
-                  <input name="phone" type="tel" required placeholder="+91 98100 12345" />
-                </div>
-                <div className="form-group">
-                  <label>Email Address</label>
-                  <input name="email" type="email" required placeholder="vikram@example.com" />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Delhi NCR Hub / Zone</label>
-                  <select name="zone" defaultValue="Gurugram (Cyber City & DLF)">
-                    <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
-                    <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
-                    <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
-                    <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
-                    <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
-                    <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Customer Segment</label>
-                  <select name="tag" defaultValue="New">
-                    <option value="VIP">VIP</option>
-                    <option value="Repeat buyer">Repeat Buyer</option>
-                    <option value="New">New Customer</option>
-                    <option value="At risk">At Risk</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Delivery Address</label>
-                <input name="address" type="text" placeholder="Flat / House No., Apartment, Sector, City" />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Dietary Preference</label>
-                  <input name="dietPreference" type="text" placeholder="e.g. High-Protein Gym Diet" />
-                </div>
-                <div className="form-group">
-                  <label>Favorite Product</label>
-                  <input name="favoriteProduct" type="text" placeholder="e.g. The Protein Stock-Up Tub (1kg)" />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Delivery Instructions / Notes</label>
-                <textarea name="notes" rows={2} placeholder="Gate pass required, call before delivery..."></textarea>
-              </div>
-
-              <button type="submit" className="primary-button full-width">
-                <Check size={16} /> Save Customer
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="modal-backdrop" onClick={() => setShowAddModal(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setShowAddModal(false)}>
+                <X size={18} />
               </button>
-            </form>
+              <h2>Add New Customer</h2>
+              <p className="modal-copy">Create a profile for Delhi NCR cold-chain dispatch.</p>
+
+              <form onSubmit={handleAddSubmit}>
+                <div className="form-group">
+                  <label>Customer Full Name</label>
+                  <input name="name" type="text" required placeholder="e.g. Vikram Malhotra" />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>WhatsApp Phone</label>
+                    <input name="phone" type="tel" required placeholder="+91 98100 12345" />
+                  </div>
+                  <div className="form-group">
+                    <label>Email Address</label>
+                    <input name="email" type="email" required placeholder="vikram@example.com" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Delhi NCR Hub / Zone</label>
+                    <select name="zone" defaultValue="Gurugram (Cyber City & DLF)">
+                      <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
+                      <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
+                      <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
+                      <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
+                      <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
+                      <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Customer Segment</label>
+                    <select name="tag" defaultValue="New">
+                      <option value="VIP">VIP</option>
+                      <option value="Repeat buyer">Repeat Buyer</option>
+                      <option value="New">New Customer</option>
+                      <option value="At risk">At Risk</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Delivery Address</label>
+                  <input name="address" type="text" placeholder="Flat / House No., Apartment, Sector, City" />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Dietary Preference</label>
+                    <input name="dietPreference" type="text" placeholder="e.g. High-Protein Gym Diet" />
+                  </div>
+                  <div className="form-group">
+                    <label>Favorite Product</label>
+                    <input name="favoriteProduct" type="text" placeholder="e.g. The Protein Stock-Up Tub (1kg)" />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Delivery Instructions / Notes</label>
+                  <textarea name="notes" rows={2} placeholder="Gate pass required, call before delivery..."></textarea>
+                </div>
+
+                <button type="submit" className="primary-button full-width">
+                  <Check size={16} /> Save Customer
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Edit Customer Modal */}
-      {showEditModal && selectedCustomer && (
-        <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowEditModal(false)}>
-              <X size={18} />
-            </button>
-            <h2>Edit Customer Profile</h2>
-            <p className="modal-copy">Update contact, address, or dietary tags.</p>
-
-            <form onSubmit={handleEditSubmit}>
-              <div className="form-group">
-                <label>Full Name</label>
-                <input name="name" type="text" required defaultValue={selectedCustomer.name} />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>WhatsApp Phone</label>
-                  <input name="phone" type="tel" required defaultValue={selectedCustomer.phone} />
-                </div>
-                <div className="form-group">
-                  <label>Email Address</label>
-                  <input name="email" type="email" required defaultValue={selectedCustomer.email} />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Delhi NCR Zone</label>
-                  <select name="zone" defaultValue={selectedCustomer.zone || 'Gurugram (Cyber City & DLF)'}>
-                    <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
-                    <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
-                    <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
-                    <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
-                    <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
-                    <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Segment Tag</label>
-                  <select name="tag" defaultValue={selectedCustomer.tag}>
-                    <option value="VIP">VIP</option>
-                    <option value="Repeat buyer">Repeat Buyer</option>
-                    <option value="New">New Customer</option>
-                    <option value="At risk">At Risk</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Delivery Address</label>
-                <input name="address" type="text" defaultValue={selectedCustomer.address} />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Dietary Preference</label>
-                  <input name="dietPreference" type="text" defaultValue={selectedCustomer.dietPreference} />
-                </div>
-                <div className="form-group">
-                  <label>Favorite Product</label>
-                  <input name="favoriteProduct" type="text" defaultValue={selectedCustomer.favoriteProduct} />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Notes</label>
-                <textarea name="notes" rows={2} defaultValue={selectedCustomer.notes}></textarea>
-              </div>
-
-              <button type="submit" className="primary-button full-width">
-                <Check size={16} /> Update Customer Profile
+      <AnimatePresence>
+        {showEditModal && selectedCustomer && (
+          <div className="modal-backdrop" onClick={() => setShowEditModal(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <X size={18} />
               </button>
-            </form>
+              <h2>Edit Customer Profile</h2>
+              <p className="modal-copy">Update contact, address, or dietary tags.</p>
+
+              <form onSubmit={handleEditSubmit}>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input name="name" type="text" required defaultValue={selectedCustomer.name} />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>WhatsApp Phone</label>
+                    <input name="phone" type="tel" required defaultValue={selectedCustomer.phone} />
+                  </div>
+                  <div className="form-group">
+                    <label>Email Address</label>
+                    <input name="email" type="email" required defaultValue={selectedCustomer.email} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Delhi NCR Zone</label>
+                    <select name="zone" defaultValue={selectedCustomer.zone || 'Gurugram (Cyber City & DLF)'}>
+                      <option value="Gurugram (Cyber City & DLF)">Gurugram (Cyber City & DLF)</option>
+                      <option value="South Delhi (Vasant Kunj & Saket)">South Delhi (Vasant Kunj & Saket)</option>
+                      <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
+                      <option value="West Delhi (Rajouri Garden & Punjabi Bagh)">West Delhi (Rajouri Garden & Punjabi Bagh)</option>
+                      <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
+                      <option value="Ghaziabad / Indirapuram">Ghaziabad / Indirapuram</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Segment Tag</label>
+                    <select name="tag" defaultValue={selectedCustomer.tag}>
+                      <option value="VIP">VIP</option>
+                      <option value="Repeat buyer">Repeat Buyer</option>
+                      <option value="New">New Customer</option>
+                      <option value="At risk">At Risk</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Delivery Address</label>
+                  <input name="address" type="text" defaultValue={selectedCustomer.address} />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Dietary Preference</label>
+                    <input name="dietPreference" type="text" defaultValue={selectedCustomer.dietPreference} />
+                  </div>
+                  <div className="form-group">
+                    <label>Favorite Product</label>
+                    <input name="favoriteProduct" type="text" defaultValue={selectedCustomer.favoriteProduct} />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Notes</label>
+                  <textarea name="notes" rows={2} defaultValue={selectedCustomer.notes}></textarea>
+                </div>
+
+                <button type="submit" className="primary-button full-width">
+                  <Check size={16} /> Update Customer Profile
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

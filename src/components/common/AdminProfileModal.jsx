@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
   X,
   User,
@@ -86,7 +87,14 @@ export default function AdminProfileModal({ onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal admin-profile-modal" onClick={(e) => e.stopPropagation()}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 15 }}
+        transition={{ duration: 0.2 }}
+        className="modal admin-profile-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="modal-close" onClick={onClose} aria-label="Close Profile">
           <X size={20} />
         </button>
@@ -423,7 +431,7 @@ export default function AdminProfileModal({ onClose }) {
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

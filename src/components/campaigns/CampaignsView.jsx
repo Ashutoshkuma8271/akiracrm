@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import {
   Megaphone,
   Plus,
@@ -93,6 +95,16 @@ export default function CampaignsView() {
       messageTemplate: templateText
     });
 
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    } catch (e) {
+      // ignore
+    }
+
     setShowModal(false);
     setCampaignTitle('');
   };
@@ -126,7 +138,12 @@ export default function CampaignsView() {
 
       {/* Campaign KPI Metrics */}
       <section className="metric-grid">
-        <div className="metric-card">
+        <motion.div
+          className="metric-card"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <div className="metric-icon sage">
             <TrendingUp size={20} />
           </div>
@@ -137,9 +154,14 @@ export default function CampaignsView() {
               <b>↑ 38.4%</b> retention lift
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="metric-card">
+        <motion.div
+          className="metric-card"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.05 }}
+        >
           <div className="metric-icon coral">
             <MessageSquare size={20} />
           </div>
@@ -150,9 +172,14 @@ export default function CampaignsView() {
               <b>92.8% Avg</b> Read Rate
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="metric-card">
+        <motion.div
+          className="metric-card"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.1 }}
+        >
           <div className="metric-icon sun">
             <CheckCircle size={20} />
           </div>
@@ -163,9 +190,14 @@ export default function CampaignsView() {
               <b>26.4%</b> conversion rate
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="metric-card">
+        <motion.div
+          className="metric-card"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.15 }}
+        >
           <div className="metric-icon blue">
             <Percent size={20} />
           </div>
@@ -176,11 +208,15 @@ export default function CampaignsView() {
               <b>₹1.42L</b> generated
             </p>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Campaigns Grid */}
-      <div className="campaigns-grid">
+      <motion.div
+        className="campaigns-grid"
+        layout
+        transition={{ duration: 0.2 }}
+      >
         {campaigns.map((camp) => (
           <div key={camp.id} className="campaign-card">
             <div className="campaign-card-top">
@@ -271,14 +307,19 @@ export default function CampaignsView() {
 
               <button
                 className="secondary-button-sm"
-                onClick={() => showToast(`Broadcast triggered for ${camp.sentCount || 850} customers in ${camp.targetSegment}`)}
+                onClick={() => {
+                  try {
+                    confetti({ particleCount: 30, spread: 40 });
+                  } catch(e){}
+                  showToast(`Broadcast triggered for ${camp.sentCount || 850} customers in ${camp.targetSegment}`);
+                }}
               >
                 Trigger Broadcast
               </button>
             </div>
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Retention Insights Strip */}
       <section className="insight-strip">
@@ -302,114 +343,123 @@ export default function CampaignsView() {
       </section>
 
       {/* Create Campaign Modal with Live Phone Preview */}
-      {showModal && (
-        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="modal campaign-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowModal(false)}>
-              <X size={18} />
-            </button>
+      <AnimatePresence>
+        {showModal && (
+          <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="modal campaign-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setShowModal(false)}>
+                <X size={18} />
+              </button>
 
-            <h2>Create WhatsApp Drop</h2>
-            <p className="modal-copy">Launch a high-converting broadcast to Delhi NCR meat lovers.</p>
+              <h2>Create WhatsApp Drop</h2>
+              <p className="modal-copy">Launch a high-converting broadcast to Delhi NCR meat lovers.</p>
 
-            {/* Preset Recipe Buttons */}
-            <div className="preset-recipes-row">
-              <span className="preset-label">Quick Recipes:</span>
-              {presets.map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="preset-pill-btn"
-                  onClick={() => applyPreset(p)}
-                >
-                  <Flame size={11} className="text-coral" /> {p.title.split(' (')[0]}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={handleCreateSubmit}>
-              <div className="form-group">
-                <label>Campaign Title</label>
-                <input
-                  type="text"
-                  required
-                  value={campaignTitle}
-                  onChange={(e) => setCampaignTitle(e.target.value)}
-                  placeholder="e.g. Weekend Barbecue Flash Drop"
-                />
+              {/* Preset Recipe Buttons */}
+              <div className="preset-recipes-row">
+                <span className="preset-label">Quick Recipes:</span>
+                {presets.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="preset-pill-btn"
+                    onClick={() => applyPreset(p)}
+                  >
+                    <Flame size={11} className="text-coral" /> {p.title.split(' (')[0]}
+                  </button>
+                ))}
               </div>
 
-              <div className="form-row">
+              <form onSubmit={handleCreateSubmit}>
                 <div className="form-group">
-                  <label>Target Segment</label>
-                  <select
-                    value={targetSegment}
-                    onChange={(e) => setTargetSegment(e.target.value)}
-                  >
-                    <option value="VIP & Repeat Buyers">VIP & Repeat Buyers ({getSegmentCount('VIP & Repeat Buyers')})</option>
-                    <option value="VIP">VIP Only ({getSegmentCount('VIP')})</option>
-                    <option value="Repeat buyer">Repeat Buyers ({getSegmentCount('Repeat buyer')})</option>
-                    <option value="At-Risk Customers">At-Risk Win-Back ({getSegmentCount('At-Risk Customers')})</option>
-                    <option value="All Customers">All Delhi NCR Customers ({getSegmentCount('All')})</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Promo Coupon Code</label>
+                  <label>Campaign Title</label>
                   <input
                     type="text"
                     required
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    placeholder="STOCKUP"
+                    value={campaignTitle}
+                    onChange={(e) => setCampaignTitle(e.target.value)}
+                    placeholder="e.g. Weekend Barbecue Flash Drop"
                   />
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label>Discount Offer Headline</label>
-                <input
-                  type="text"
-                  required
-                  value={discountDesc}
-                  onChange={(e) => setDiscountDesc(e.target.value)}
-                  placeholder="20% OFF on 1kg Family Tubs"
-                />
-              </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Target Segment</label>
+                    <select
+                      value={targetSegment}
+                      onChange={(e) => setTargetSegment(e.target.value)}
+                    >
+                      <option value="VIP & Repeat Buyers">VIP & Repeat Buyers ({getSegmentCount('VIP & Repeat Buyers')})</option>
+                      <option value="VIP">VIP Only ({getSegmentCount('VIP')})</option>
+                      <option value="Repeat buyer">Repeat Buyers ({getSegmentCount('Repeat buyer')})</option>
+                      <option value="At-Risk Customers">At-Risk Win-Back ({getSegmentCount('At-Risk Customers')})</option>
+                      <option value="All Customers">All Delhi NCR Customers ({getSegmentCount('All')})</option>
+                    </select>
+                  </div>
 
-              <div className="form-group">
-                <label>WhatsApp Message Template (Merge tags: {`{{name}}`}, {`{{code}}`}, {`{{discount}}`})</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={templateText}
-                  onChange={(e) => setTemplateText(e.target.value)}
-                ></textarea>
-              </div>
-
-              {/* Live Mockup */}
-              <div className="live-preview-box">
-                <div className="preview-label">
-                  <Smartphone size={13} /> Live WhatsApp Preview:
+                  <div className="form-group">
+                    <label>Promo Coupon Code</label>
+                    <input
+                      type="text"
+                      required
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="STOCKUP"
+                    />
+                  </div>
                 </div>
-                <div className="wa-bubble-preview">
-                  <p>
-                    {templateText
-                      .replace('{{name}}', 'Priya')
-                      .replace('{{code}}', couponCode || 'STOCKUP')
-                      .replace('{{discount}}', discountDesc || 'Special Offer')}
-                  </p>
-                  <div className="wa-meta-time">17:30 &bull; Sent via Akira Fresh Cold Chain</div>
-                </div>
-              </div>
 
-              <button type="submit" className="primary-button full-width">
-                <Send size={16} /> Schedule Broadcast ({getSegmentCount(targetSegment)} Recipients)
-              </button>
-            </form>
+                <div className="form-group">
+                  <label>Discount Offer Headline</label>
+                  <input
+                    type="text"
+                    required
+                    value={discountDesc}
+                    onChange={(e) => setDiscountDesc(e.target.value)}
+                    placeholder="20% OFF on 1kg Family Tubs"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>WhatsApp Message Template (Merge tags: {`{{name}}`}, {`{{code}}`}, {`{{discount}}`})</label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={templateText}
+                    onChange={(e) => setTemplateText(e.target.value)}
+                  ></textarea>
+                </div>
+
+                {/* Live Mockup */}
+                <div className="live-preview-box">
+                  <div className="preview-label">
+                    <Smartphone size={13} /> Live WhatsApp Preview:
+                  </div>
+                  <div className="wa-bubble-preview">
+                    <p>
+                      {templateText
+                        .replace('{{name}}', 'Priya')
+                        .replace('{{code}}', couponCode || 'STOCKUP')
+                        .replace('{{discount}}', discountDesc || 'Special Offer')}
+                    </p>
+                    <div className="wa-meta-time">17:30 &bull; Sent via Akira Fresh Cold Chain</div>
+                  </div>
+                </div>
+
+                <button type="submit" className="primary-button full-width">
+                  <Send size={16} /> Schedule Broadcast ({getSegmentCount(targetSegment)} Recipients)
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

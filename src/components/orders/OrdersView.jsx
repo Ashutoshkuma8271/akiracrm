@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import {
   ShoppingBag,
   Plus,
@@ -19,7 +21,9 @@ import {
   Receipt,
   FileText,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Copy,
+  Check
 } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
@@ -39,6 +43,7 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
   const [zoneFilter, setZoneFilter] = useState('All');
   const [showCreateModal, setShowCreateModal] = useState(Boolean(initialSelectedCustomer));
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState(null);
+  const [copiedOrderId, setCopiedOrderId] = useState(null);
 
   // New order form state
   const [newOrderCustomer, setNewOrderCustomer] = useState(initialSelectedCustomer?.id || customers[0]?.id || '');
@@ -165,9 +170,38 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
       notes: orderNotes
     });
 
+    try {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+    } catch (_) {}
+
     setShowCreateModal(false);
     setOrderCoupon('');
     setOrderNotes('');
+  };
+
+  const handleStatusChangeWithFeedback = (orderId, newStatus) => {
+    updateOrderStatus(orderId, newStatus);
+    if (newStatus === 'Delivered') {
+      try {
+        confetti({
+          particleCount: 65,
+          spread: 70,
+          origin: { y: 0.55 }
+        });
+      } catch (_) {}
+    }
+  };
+
+  const handleCopyOrderSummary = (ord) => {
+    const summary = `Akira Fresh Order #${ord.id}\nCustomer: ${ord.customerName} (${ord.customerPhone || ord.phone})\nItems: ${(ord.items || []).map(i => `${i.qty}x ${i.name}`).join(', ')}\nTotal: ₹${ord.totalAmount}\nStatus: ${ord.status}\nCold-Chain Temp: ${ord.tempLog || '-18°C Verified'}`;
+    navigator.clipboard.writeText(summary);
+    setCopiedOrderId(ord.id);
+    showToast('Order summary copied to clipboard');
+    setTimeout(() => setCopiedOrderId(null), 2000);
   };
 
   return (
@@ -295,7 +329,7 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
                   <div className="order-status-cell">
                     <select
                       value={ord.status || 'Placed'}
-                      onChange={(e) => updateOrderStatus(ord.id, e.target.value)}
+                      onChange={(e) => handleStatusChangeWithFeedback(ord.id, e.target.value)}
                       className={`status-select ${(ord.status || 'placed').toLowerCase().replace(/[\s-]/g, '_')}`}
                     >
                       <option value="Placed">Placed</option>
@@ -309,6 +343,13 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
 
                   {/* Actions */}
                   <div className="order-actions-cell">
+                    <button
+                      className="action-icon-btn"
+                      title="Copy order details"
+                      onClick={() => handleCopyOrderSummary(ord)}
+                    >
+                      {copiedOrderId === ord.id ? <Check size={14} className="text-green" /> : <Copy size={14} />}
+                    </button>
                     <a
                       href={`https://wa.me/${(custPhone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                         `Hi ${ord.customerName || 'Customer'}! 🍗 Your Akira Fresh order #${ord.id || ''} is currently ${ord.status || 'In Transit'}. Temperature verified at -18°C in cryogenic insulation. Slot: ${ord.deliverySlot || ord.slot || 'Morning'}. Thank you for choosing Akira Fresh: https://akirafresh.in`
@@ -336,300 +377,318 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
       </div>
 
       {/* Create Order Modal */}
-      {showCreateModal && (
-        <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
-          <div className="modal order-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowCreateModal(false)}>
-              <X size={18} />
-            </button>
-
-            <h2>Create Cold-Chain Order</h2>
-            <p className="modal-copy">Assemble ready-to-cook snacks with automated discount and GST rules.</p>
-
-            <form onSubmit={handleCreateOrderSubmit}>
-              {/* Select Customer */}
-              <div className="form-group">
-                <label>Select Customer Profile</label>
-                <select
-                  value={newOrderCustomer}
-                  onChange={(e) => setNewOrderCustomer(e.target.value)}
-                  required
-                >
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.phone}) - {c.zone || 'Delhi NCR'} [{c.tag}]
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Items Builder */}
-              <div className="items-builder-section">
-                <div className="items-builder-header">
-                  <strong>Order Items ({orderItems.length})</strong>
-                  <button
-                    type="button"
-                    className="text-button"
-                    onClick={handleAddItemRow}
-                  >
-                    + Add Product
-                  </button>
-                </div>
-
-                <div className="items-builder-list">
-                  {orderItems.map((item, index) => {
-                    const currentProd = products.find((p) => p.id === item.productId) || products[0];
-
-                    return (
-                      <div key={index} className="builder-item-row">
-                        <select
-                          className="builder-prod-select"
-                          value={item.productId}
-                          onChange={(e) => handleUpdateItemProduct(index, e.target.value)}
-                        >
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} - ₹{p.price} ({p.unit})
-                            </option>
-                          ))}
-                        </select>
-
-                        <div className="qty-controls">
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateItemQty(index, -1)}
-                          >
-                            -
-                          </button>
-                          <span>{item.qty}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleUpdateItemQty(index, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-
-                        <strong className="builder-line-total">
-                          ₹{(currentProd?.price || 0) * item.qty}
-                        </strong>
-
-                        {orderItems.length > 1 && (
-                          <button
-                            type="button"
-                            className="remove-item-btn"
-                            onClick={() => handleRemoveItemRow(index)}
-                          >
-                            <X size={14} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Cold-Chain Delivery Slot</label>
-                  <select value={orderSlot} onChange={(e) => setOrderSlot(e.target.value)}>
-                    <option value="Today: 4:00 PM - 6:00 PM (Cold-Chain Express)">Today: 4:00 PM - 6:00 PM (Cold-Chain Express)</option>
-                    <option value="Today: 6:00 PM - 8:00 PM (Cold-Chain Express)">Today: 6:00 PM - 8:00 PM (Cold-Chain Express)</option>
-                    <option value="Tomorrow: 8:00 AM - 11:00 AM (Morning Blast Freeze)">Tomorrow: 8:00 AM - 11:00 AM (Morning Blast Freeze)</option>
-                    <option value="Tomorrow: 4:00 PM - 7:00 PM (Evening Drop)">Tomorrow: 4:00 PM - 7:00 PM (Evening Drop)</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Payment Method</label>
-                  <select
-                    value={orderPaymentMethod}
-                    onChange={(e) => setOrderPaymentMethod(e.target.value)}
-                  >
-                    <option value="UPI / Razorpay (Paid)">UPI / Razorpay (Paid)</option>
-                    <option value="Credit Card (Paid)">Credit Card (Paid)</option>
-                    <option value="Cash on Delivery (Cold Slot)">Cash on Delivery (Cold Slot)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Promo Coupon (e.g. STOCKUP, PARTY50, FRESH30)</label>
-                  <input
-                    type="text"
-                    placeholder="Enter promo coupon code"
-                    value={orderCoupon}
-                    onChange={(e) => setOrderCoupon(e.target.value)}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Delivery Instructions</label>
-                  <input
-                    type="text"
-                    placeholder="Keep in thermal bag until bell rings..."
-                    value={orderNotes}
-                    onChange={(e) => setOrderNotes(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Real-Time Price Summary */}
-              <div className="order-summary-box">
-                <div className="summary-row">
-                  <span>Subtotal</span>
-                  <strong>₹{newOrderCalculations.subtotal}</strong>
-                </div>
-                {newOrderCalculations.discount > 0 && (
-                  <div className="summary-row text-coral">
-                    <span>Discount ({orderCoupon.toUpperCase()})</span>
-                    <strong>-₹{newOrderCalculations.discount}</strong>
-                  </div>
-                )}
-                <div className="summary-row">
-                  <span>GST (5% Packaged Frozen Foods)</span>
-                  <strong>₹{newOrderCalculations.taxAmount}</strong>
-                </div>
-                <div className="summary-row">
-                  <span>Cold-Chain Express Delivery</span>
-                  <strong>
-                    {newOrderCalculations.deliveryFee === 0 ? (
-                      <span className="text-green">FREE (&ge; ₹499)</span>
-                    ) : (
-                      `₹${newOrderCalculations.deliveryFee}`
-                    )}
-                  </strong>
-                </div>
-                <div className="summary-row total-row">
-                  <span>Grand Total</span>
-                  <strong className="total-amount">₹{newOrderCalculations.totalAmount}</strong>
-                </div>
-              </div>
-
-              <button type="submit" className="primary-button full-width">
-                <CheckCircle size={16} /> Dispatch Order (₹{newOrderCalculations.totalAmount})
+      <AnimatePresence>
+        {showCreateModal && (
+          <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="modal order-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
+                <X size={18} />
               </button>
-            </form>
+
+              <h2>Create Cold-Chain Order</h2>
+              <p className="modal-copy">Assemble ready-to-cook snacks with automated discount and GST rules.</p>
+
+              <form onSubmit={handleCreateOrderSubmit}>
+                {/* Select Customer */}
+                <div className="form-group">
+                  <label>Select Customer Profile</label>
+                  <select
+                    value={newOrderCustomer}
+                    onChange={(e) => setNewOrderCustomer(e.target.value)}
+                    required
+                  >
+                    {customers.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.phone}) - {c.zone || 'Delhi NCR'} [{c.tag}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Items Builder */}
+                <div className="items-builder-section">
+                  <div className="items-builder-header">
+                    <strong>Order Items ({orderItems.length})</strong>
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={handleAddItemRow}
+                    >
+                      + Add Product
+                    </button>
+                  </div>
+
+                  <div className="items-builder-list">
+                    {orderItems.map((item, index) => {
+                      const currentProd = products.find((p) => p.id === item.productId) || products[0];
+
+                      return (
+                        <div key={index} className="builder-item-row">
+                          <select
+                            className="builder-prod-select"
+                            value={item.productId}
+                            onChange={(e) => handleUpdateItemProduct(index, e.target.value)}
+                          >
+                            {products.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name} - ₹{p.price} ({p.unit})
+                              </option>
+                            ))}
+                          </select>
+
+                          <div className="qty-controls">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemQty(index, -1)}
+                            >
+                              -
+                            </button>
+                            <span>{item.qty}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateItemQty(index, 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <strong className="builder-line-total">
+                            ₹{(currentProd?.price || 0) * item.qty}
+                          </strong>
+
+                          {orderItems.length > 1 && (
+                            <button
+                              type="button"
+                              className="remove-item-btn"
+                              onClick={() => handleRemoveItemRow(index)}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Cold-Chain Delivery Slot</label>
+                    <select value={orderSlot} onChange={(e) => setOrderSlot(e.target.value)}>
+                      <option value="Today: 4:00 PM - 6:00 PM (Cold-Chain Express)">Today: 4:00 PM - 6:00 PM (Cold-Chain Express)</option>
+                      <option value="Today: 6:00 PM - 8:00 PM (Cold-Chain Express)">Today: 6:00 PM - 8:00 PM (Cold-Chain Express)</option>
+                      <option value="Tomorrow: 8:00 AM - 11:00 AM (Morning Blast Freeze)">Tomorrow: 8:00 AM - 11:00 AM (Morning Blast Freeze)</option>
+                      <option value="Tomorrow: 4:00 PM - 7:00 PM (Evening Drop)">Tomorrow: 4:00 PM - 7:00 PM (Evening Drop)</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Payment Method</label>
+                    <select
+                      value={orderPaymentMethod}
+                      onChange={(e) => setOrderPaymentMethod(e.target.value)}
+                    >
+                      <option value="UPI / Razorpay (Paid)">UPI / Razorpay (Paid)</option>
+                      <option value="Credit Card (Paid)">Credit Card (Paid)</option>
+                      <option value="Cash on Delivery (Cold Slot)">Cash on Delivery (Cold Slot)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Promo Coupon (e.g. STOCKUP, PARTY50, FRESH30)</label>
+                    <input
+                      type="text"
+                      placeholder="Enter promo coupon code"
+                      value={orderCoupon}
+                      onChange={(e) => setOrderCoupon(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Delivery Instructions</label>
+                    <input
+                      type="text"
+                      placeholder="Keep in thermal bag until bell rings..."
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Real-Time Price Summary */}
+                <div className="order-summary-box">
+                  <div className="summary-row">
+                    <span>Subtotal</span>
+                    <strong>₹{newOrderCalculations.subtotal}</strong>
+                  </div>
+                  {newOrderCalculations.discount > 0 && (
+                    <div className="summary-row text-coral">
+                      <span>Discount ({orderCoupon.toUpperCase()})</span>
+                      <strong>-₹{newOrderCalculations.discount}</strong>
+                    </div>
+                  )}
+                  <div className="summary-row">
+                    <span>GST (5% Packaged Frozen Foods)</span>
+                    <strong>₹{newOrderCalculations.taxAmount}</strong>
+                  </div>
+                  <div className="summary-row">
+                    <span>Cold-Chain Express Delivery</span>
+                    <strong>
+                      {newOrderCalculations.deliveryFee === 0 ? (
+                        <span className="text-green">FREE (&ge; ₹499)</span>
+                      ) : (
+                        `₹${newOrderCalculations.deliveryFee}`
+                      )}
+                    </strong>
+                  </div>
+                  <div className="summary-row total-row">
+                    <span>Grand Total</span>
+                    <strong className="total-amount">₹{newOrderCalculations.totalAmount}</strong>
+                  </div>
+                </div>
+
+                <button type="submit" className="primary-button full-width">
+                  <CheckCircle size={16} /> Dispatch Order (₹{newOrderCalculations.totalAmount})
+                </button>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Printable Tax Invoice Modal */}
-      {selectedOrderForInvoice && (
-        <div className="modal-backdrop" onClick={() => setSelectedOrderForInvoice(null)}>
-          <div className="modal invoice-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close no-print" onClick={() => setSelectedOrderForInvoice(null)}>
-              <X size={18} />
-            </button>
+      <AnimatePresence>
+        {selectedOrderForInvoice && (
+          <div className="modal-backdrop" onClick={() => setSelectedOrderForInvoice(null)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="modal invoice-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="modal-close no-print" onClick={() => setSelectedOrderForInvoice(null)}>
+                <X size={18} />
+              </button>
 
-            <div className="invoice-header">
-              <div className="invoice-brand">
-                <div className="footer-logo">
-                  <svg viewBox="0 0 100 100" width="28" height="28">
-                    <circle cx="50" cy="50" r="48" fill="#0B2B1B" />
-                    <path d="M35 65 C30 45 45 30 65 35 C65 55 50 70 35 65 Z" fill="#22C55E" />
-                    <path d="M35 65 L60 40" stroke="#FAF7F0" strokeWidth="4" strokeLinecap="round" />
-                  </svg>
+              <div className="invoice-header">
+                <div className="invoice-brand">
+                  <div className="footer-logo">
+                    <svg viewBox="0 0 100 100" width="28" height="28">
+                      <circle cx="50" cy="50" r="48" fill="#0B2B1B" />
+                      <path d="M35 65 C30 45 45 30 65 35 C65 55 50 70 35 65 Z" fill="#22C55E" />
+                      <path d="M35 65 L60 40" stroke="#FAF7F0" strokeWidth="4" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2>AKIRA FRESH</h2>
+                    <small>Cold-Chain Delivery &bull; FSSAI Lic #{settings.fssaiNumber || '13324008000492'}</small>
+                  </div>
                 </div>
-                <div>
-                  <h2>AKIRA FRESH</h2>
-                  <small>Cold-Chain Delivery &bull; FSSAI Lic #{settings.fssaiNumber || '13324008000492'}</small>
+
+                <div className="invoice-meta">
+                  <strong>INVOICE #{selectedOrderForInvoice.id}</strong>
+                  <p>Date: {new Date(selectedOrderForInvoice.createdAt || Date.now()).toLocaleDateString()}</p>
+                  <p>Slot: {selectedOrderForInvoice.deliverySlot || selectedOrderForInvoice.slot}</p>
                 </div>
               </div>
 
-              <div className="invoice-meta">
-                <strong>INVOICE #{selectedOrderForInvoice.id}</strong>
-                <p>Date: {new Date(selectedOrderForInvoice.createdAt || Date.now()).toLocaleDateString()}</p>
-                <p>Slot: {selectedOrderForInvoice.deliverySlot || selectedOrderForInvoice.slot}</p>
-              </div>
-            </div>
+              <div className="invoice-addresses">
+                <div className="invoice-addr-col">
+                  <small>DISPATCHED FROM</small>
+                  <strong>Akira Fresh Central Hub (Delhi NCR)</strong>
+                  <p>Okhla Phase 2, New Delhi 110020</p>
+                  <p>Support: +91 85128 77877 | support@akirafresh.in</p>
+                </div>
 
-            <div className="invoice-addresses">
-              <div className="invoice-addr-col">
-                <small>DISPATCHED FROM</small>
-                <strong>Akira Fresh Central Hub (Delhi NCR)</strong>
-                <p>Okhla Phase 2, New Delhi 110020</p>
-                <p>Support: +91 85128 77877 | support@akirafresh.in</p>
+                <div className="invoice-addr-col">
+                  <small>DELIVER TO CUSTOMER</small>
+                  <strong>{selectedOrderForInvoice.customerName}</strong>
+                  <p>{selectedOrderForInvoice.address || selectedOrderForInvoice.zone}</p>
+                  <p>Phone: {selectedOrderForInvoice.phone || selectedOrderForInvoice.customerPhone}</p>
+                </div>
               </div>
 
-              <div className="invoice-addr-col">
-                <small>DELIVER TO CUSTOMER</small>
-                <strong>{selectedOrderForInvoice.customerName}</strong>
-                <p>{selectedOrderForInvoice.address || selectedOrderForInvoice.zone}</p>
-                <p>Phone: {selectedOrderForInvoice.phone || selectedOrderForInvoice.customerPhone}</p>
-              </div>
-            </div>
-
-            <table className="invoice-table">
-              <thead>
-                <tr>
-                  <th>Item Description</th>
-                  <th className="text-right">Qty</th>
-                  <th className="text-right">Unit Price</th>
-                  <th className="text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedOrderForInvoice.items.map((it, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <strong>{it.name}</strong>
-                      <span className="block-text">-18°C Cryogenic Blast Frozen</span>
-                    </td>
-                    <td className="text-right">{it.qty}</td>
-                    <td className="text-right">₹{it.price}</td>
-                    <td className="text-right">₹{it.price * it.qty}</td>
+              <table className="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Item Description</th>
+                    <th className="text-right">Qty</th>
+                    <th className="text-right">Unit Price</th>
+                    <th className="text-right">Total</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {selectedOrderForInvoice.items.map((it, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        <strong>{it.name}</strong>
+                        <span className="block-text">-18°C Cryogenic Blast Frozen</span>
+                      </td>
+                      <td className="text-right">{it.qty}</td>
+                      <td className="text-right">₹{it.price}</td>
+                      <td className="text-right">₹{it.price * it.qty}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            <div className="invoice-totals">
-              <div className="invoice-total-row">
-                <span>Subtotal:</span>
-                <strong>₹{selectedOrderForInvoice.subtotal || selectedOrderForInvoice.totalAmount}</strong>
-              </div>
-              {selectedOrderForInvoice.discountAmount > 0 && (
-                <div className="invoice-total-row text-coral">
-                  <span>Discount:</span>
-                  <strong>-₹{selectedOrderForInvoice.discountAmount}</strong>
+              <div className="invoice-totals">
+                <div className="invoice-total-row">
+                  <span>Subtotal:</span>
+                  <strong>₹{selectedOrderForInvoice.subtotal || selectedOrderForInvoice.totalAmount}</strong>
                 </div>
-              )}
-              <div className="invoice-total-row">
-                <span>GST (5% Frozen Foods):</span>
-                <strong>₹{selectedOrderForInvoice.taxAmount || Math.round(selectedOrderForInvoice.totalAmount * 0.05)}</strong>
+                {selectedOrderForInvoice.discountAmount > 0 && (
+                  <div className="invoice-total-row text-coral">
+                    <span>Discount:</span>
+                    <strong>-₹{selectedOrderForInvoice.discountAmount}</strong>
+                  </div>
+                )}
+                <div className="invoice-total-row">
+                  <span>GST (5% Frozen Foods):</span>
+                  <strong>₹{selectedOrderForInvoice.taxAmount || Math.round(selectedOrderForInvoice.totalAmount * 0.05)}</strong>
+                </div>
+                <div className="invoice-total-row">
+                  <span>Delivery:</span>
+                  <strong>{selectedOrderForInvoice.deliveryFee === 0 ? 'FREE' : `₹${selectedOrderForInvoice.deliveryFee || 50}`}</strong>
+                </div>
+                <div className="invoice-total-row grand-total-row">
+                  <span>Grand Total:</span>
+                  <strong className="text-green">₹{selectedOrderForInvoice.totalAmount}</strong>
+                </div>
               </div>
-              <div className="invoice-total-row">
-                <span>Delivery:</span>
-                <strong>{selectedOrderForInvoice.deliveryFee === 0 ? 'FREE' : `₹${selectedOrderForInvoice.deliveryFee || 50}`}</strong>
-              </div>
-              <div className="invoice-total-row grand-total-row">
-                <span>Grand Total:</span>
-                <strong className="text-green">₹{selectedOrderForInvoice.totalAmount}</strong>
-              </div>
-            </div>
 
-            <div className="invoice-footer-badges">
-              <div className="seal-badge">
-                <ShieldCheck size={16} /> 100% Halal & FSSAI Certified
+              <div className="invoice-footer-badges">
+                <div className="seal-badge">
+                  <ShieldCheck size={16} /> 100% Halal & FSSAI Certified
+                </div>
+                <div className="seal-badge">
+                  <Snowflake size={16} /> Sub-Zero Cold Chain Delivered (-18°C Verified)
+                </div>
               </div>
-              <div className="seal-badge">
-                <Snowflake size={16} /> Sub-Zero Cold Chain Delivered
-              </div>
-            </div>
 
-            <div className="invoice-actions-footer no-print">
-              <button className="secondary-button" onClick={() => setSelectedOrderForInvoice(null)}>
-                Close
-              </button>
-              <button className="primary-button" onClick={() => window.print()}>
-                <Printer size={15} /> Print Tax Invoice
-              </button>
-            </div>
+              <div className="invoice-actions-footer no-print">
+                <button className="secondary-button" onClick={() => setSelectedOrderForInvoice(null)}>
+                  Close
+                </button>
+                <button className="primary-button" onClick={() => window.print()}>
+                  <Printer size={15} /> Print Tax Invoice
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

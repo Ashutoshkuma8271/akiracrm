@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Truck,
   Snowflake,
@@ -9,7 +10,8 @@ import {
   AlertTriangle,
   Radio,
   ThermometerSnowflake,
-  RotateCw
+  RotateCw,
+  PhoneCall
 } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
@@ -29,7 +31,7 @@ export default function LogisticsView() {
     setTimeout(() => {
       setRefreshing(false);
       showToast('All cold-chain sensors pinged: 100% compliance at -18°C');
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -49,15 +51,26 @@ export default function LogisticsView() {
             className={`secondary-button ${refreshing ? 'spinning-btn' : ''}`}
             onClick={handleRefreshTemp}
           >
-            <RotateCw size={14} /> Refresh Sensors
+            <RotateCw size={14} className={refreshing ? 'animate-spin' : ''} /> Refresh Sensors
           </button>
         </div>
       </section>
 
       {/* Central Hubs Grid */}
-      <div className="hubs-grid">
-        {hubs.map((hub) => (
-          <div key={hub.id} className="hub-card">
+      <motion.div
+        className="hubs-grid"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {hubs.map((hub, idx) => (
+          <motion.div
+            key={hub.id}
+            className="hub-card"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, delay: idx * 0.05 }}
+          >
             <div className="hub-card-top">
               <div>
                 <span className="hub-tag">Primary Cold Hub</span>
@@ -75,8 +88,8 @@ export default function LogisticsView() {
             </div>
 
             <div className="hub-coverage-tags">
-              {hub.coverage.map((area, idx) => (
-                <span key={idx} className="coverage-pill">
+              {hub.coverage.map((area, index) => (
+                <span key={index} className="coverage-pill">
                   {area}
                 </span>
               ))}
@@ -100,9 +113,9 @@ export default function LogisticsView() {
                 <strong className="text-green">{hub.slaScore}</strong>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Fleet Live Table */}
       <div className="workspace-card table-workspace fleet-workspace">

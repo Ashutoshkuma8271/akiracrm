@@ -58,8 +58,8 @@ export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onClose
           <div className="brand-mark">
             <div className="brand-symbol">
               <svg viewBox="0 0 100 100" width="24" height="24">
-                <circle cx="50" cy="50" r="48" fill="#0B2B1B" />
-                <path d="M35 65 C30 45 45 30 65 35 C65 55 50 70 35 65 Z" fill="#22C55E" />
+                <circle cx="50" cy="50" r="48" fill="#072416" />
+                <path d="M35 65 C30 45 45 30 65 35 C65 55 50 70 35 65 Z" fill="#10B981" />
                 <path d="M35 65 L60 40" stroke="#FAF7F0" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </div>
@@ -73,6 +73,20 @@ export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onClose
             <X size={20} />
           </button>
         </div>
+
+        <a
+          href="https://akirafresh.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="store-link-banner"
+          title="Open live customer store on akirafresh.in"
+        >
+          <div className="store-link-left">
+            <span className="store-pulse-dot" />
+            <span>akirafresh.in</span>
+          </div>
+          <ExternalLink size={12} className="text-emerald" />
+        </a>
 
         <div className="workspace-switcher">
           <span className="workspace-dot" />

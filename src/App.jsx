@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { CrmProvider, useCrm } from './context/CrmContext';
 import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
@@ -17,6 +18,8 @@ import { Check, Info, AlertTriangle } from 'lucide-react';
 function CrmApp() {
   const [activeNav, setActiveNav] = useState('Overview');
   const [selectedCustomerForOrder, setSelectedCustomerForOrder] = useState(null);
+  const [selectedCategoryForProducts, setSelectedCategoryForProducts] = useState('All');
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { toast, isProfileModalOpen, setIsProfileModalOpen } = useCrm();
 
@@ -25,12 +28,18 @@ function CrmApp() {
     setActiveNav('Orders');
   };
 
+  const handleNavigateToCategory = (categoryName) => {
+    setSelectedCategoryForProducts(categoryName);
+    setActiveNav('Products');
+  };
+
   const handleGlobalSearch = (term) => {
+    setGlobalSearchQuery(term);
     setActiveNav('Customers');
   };
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" id="akira-crm-root">
       <Sidebar
         activeNav={activeNav}
         setActiveNav={setActiveNav}
@@ -48,25 +57,44 @@ function CrmApp() {
         />
 
         <div className="page-wrap">
-          {activeNav === 'Overview' && (
-            <OverviewDashboard onNavigate={(nav) => setActiveNav(nav)} />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeNav}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="page-animated-inner"
+            >
+              {activeNav === 'Overview' && (
+                <OverviewDashboard
+                  onNavigate={(nav) => setActiveNav(nav)}
+                  onSelectCategory={handleNavigateToCategory}
+                />
+              )}
 
-          {activeNav === 'Customers' && (
-            <CustomersView onSelectCreateOrder={handleCreateOrderForCustomer} />
-          )}
+              {activeNav === 'Customers' && (
+                <CustomersView
+                  initialSearchQuery={globalSearchQuery}
+                  onSelectCreateOrder={handleCreateOrderForCustomer}
+                />
+              )}
 
-          {activeNav === 'Orders' && (
-            <OrdersView initialSelectedCustomer={selectedCustomerForOrder} />
-          )}
+              {activeNav === 'Orders' && (
+                <OrdersView initialSelectedCustomer={selectedCustomerForOrder} />
+              )}
 
-          {activeNav === 'Products' && <ProductsView />}
+              {activeNav === 'Products' && (
+                <ProductsView initialCategory={selectedCategoryForProducts} />
+              )}
 
-          {activeNav === 'Campaigns' && <CampaignsView />}
+              {activeNav === 'Campaigns' && <CampaignsView />}
 
-          {activeNav === 'Logistics' && <LogisticsView />}
+              {activeNav === 'Logistics' && <LogisticsView />}
 
-          {activeNav === 'Settings' && <SettingsView />}
+              {activeNav === 'Settings' && <SettingsView />}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Responsive Global Footer */}
           <AppFooter onNavigate={(nav) => setActiveNav(nav)} />
@@ -77,25 +105,37 @@ function CrmApp() {
       <MobileBottomNav activeNav={activeNav} setActiveNav={setActiveNav} />
 
       {/* Admin Profile Modal */}
-      {isProfileModalOpen && (
-        <AdminProfileModal onClose={() => setIsProfileModalOpen(false)} />
-      )}
+      <AnimatePresence>
+        {isProfileModalOpen && (
+          <AdminProfileModal onClose={() => setIsProfileModalOpen(false)} />
+        )}
+      </AnimatePresence>
 
       {/* Global Toast Notification */}
-      {toast && (
-        <div className={`toast toast-${toast.type || 'success'}`}>
-          <span className="toast-icon">
-            {toast.type === 'error' ? (
-              <AlertTriangle size={14} />
-            ) : toast.type === 'info' ? (
-              <Info size={14} />
-            ) : (
-              <Check size={14} />
-            )}
-          </span>
-          <span className="toast-message">{toast.message}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className={`toast toast-${toast.type || 'success'}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span className="toast-icon">
+              {toast.type === 'error' ? (
+                <AlertTriangle size={15} />
+              ) : toast.type === 'info' ? (
+                <Info size={15} />
+              ) : (
+                <Check size={15} />
+              )}
+            </span>
+            <span className="toast-message">{toast.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

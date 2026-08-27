@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
+import confetti from 'canvas-confetti';
 import {
   Settings,
   ShieldCheck,
@@ -36,6 +38,9 @@ export default function SettingsView() {
       freeDeliveryThreshold: Number(freeThreshold),
       standardDeliveryFee: Number(deliveryFee)
     });
+    try {
+      confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
+    } catch(e) {}
   };
 
   const handleTestSupabase = (e) => {
@@ -60,7 +65,12 @@ export default function SettingsView() {
         </div>
       </section>
 
-      <div className="settings-grid">
+      <motion.div
+        className="settings-grid"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
         {/* Store & FSSAI Details */}
         <form className="workspace-card settings-card" onSubmit={handleSaveStoreSettings}>
           <div className="card-heading">
@@ -214,7 +224,7 @@ export default function SettingsView() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

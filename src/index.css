@@ -2,47 +2,47 @@
 
 :root {
   font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #0F1E17;
-  background-color: #FAF8F4;
+  color: #091E13;
+  background-color: #F8FAF8;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 
-  /* Akira Fresh Brand Luxury Colors */
-  --brand-forest: #071F13;
-  --brand-forest-card: #0E3522;
-  --brand-forest-hover: #14462E;
-  --brand-forest-border: #1C5237;
+  /* Akira Fresh Brand Colors - Aligned with https://akirafresh.in */
+  --brand-forest: #062817;
+  --brand-forest-card: #0D3521;
+  --brand-forest-hover: #13452B;
+  --brand-forest-border: #1B5738;
 
   --brand-emerald: #10B981;
   --brand-emerald-dark: #059669;
-  --brand-emerald-light: #D1FAE5;
+  --brand-emerald-light: #ECFDF5;
   --emerald-gradient: linear-gradient(135deg, #34D399 0%, #059669 100%);
-  --emerald-glow: rgba(16, 185, 129, 0.35);
+  --emerald-glow: rgba(16, 185, 129, 0.3);
 
-  --brand-gold: #D4AF37;
-  --brand-gold-dark: #B8972E;
-  --brand-gold-light: #FEF9E7;
-  --gold-gradient: linear-gradient(135deg, #F9E79F 0%, #D4AF37 100%);
-  --gold-glow: rgba(212, 175, 55, 0.3);
+  --brand-gold: #F59E0B;
+  --brand-gold-dark: #D97706;
+  --brand-gold-light: #FFFBEB;
+  --gold-gradient: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+  --gold-glow: rgba(245, 158, 11, 0.28);
 
-  --brand-coral: #EF4444;
-  --brand-coral-dark: #DC2626;
-  --brand-coral-light: #FEE2E2;
-  --coral-gradient: linear-gradient(135deg, #F87171 0%, #DC2626 100%);
-  --coral-glow: rgba(239, 68, 68, 0.35);
+  --brand-coral: #E11D48;
+  --brand-coral-dark: #BE123C;
+  --brand-coral-light: #FFF1F2;
+  --coral-gradient: linear-gradient(135deg, #FB7185 0%, #E11D48 100%);
+  --coral-glow: rgba(225, 29, 72, 0.3);
 
   --brand-amber: #F59E0B;
   --brand-amber-dark: #D97706;
   --brand-amber-light: #FEF3C7;
   --amber-gradient: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
-  --amber-glow: rgba(245, 158, 11, 0.35);
+  --amber-glow: rgba(245, 158, 11, 0.3);
 
-  --brand-cyan: #06B6D4;
-  --brand-cyan-dark: #0284C7;
+  --brand-cyan: #0284C7;
+  --brand-cyan-dark: #0369A1;
   --brand-cyan-light: #E0F2FE;
   --cyan-gradient: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
-  --cyan-glow: rgba(6, 182, 212, 0.35);
+  --cyan-glow: rgba(2, 132, 199, 0.28);
 
   --brand-purple: #8B5CF6;
   --brand-purple-dark: #7C3AED;
@@ -50,22 +50,22 @@
   --purple-gradient: linear-gradient(135deg, #A78BFA 0%, #7C3AED 100%);
 
   /* Surfaces & Neutral Tokens */
-  --ink: #0F1E17;
-  --ink-secondary: #2D4438;
+  --ink: #091E13;
+  --ink-secondary: #1F382B;
   --muted: #64748B;
   --subtle-text: #94A3B8;
-  --line: #E8E4D9;
-  --line-light: #F2EFE8;
+  --line: #E3E9E5;
+  --line-light: #EDF2EF;
   --paper: #FFFFFF;
-  --canvas: #FAF8F4;
+  --canvas: #F8FAF8;
   
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 18px;
   --radius-xl: 24px;
-  --shadow-sm: 0 2px 6px rgba(7, 31, 19, 0.04);
-  --shadow-md: 0 8px 24px rgba(7, 31, 19, 0.08);
-  --shadow-lg: 0 16px 44px rgba(7, 31, 19, 0.14);
+  --shadow-sm: 0 2px 6px rgba(6, 40, 23, 0.04);
+  --shadow-md: 0 8px 24px rgba(6, 40, 23, 0.07);
+  --shadow-lg: 0 16px 44px rgba(6, 40, 23, 0.12);
 }
 
 *, *::before, *::after {
@@ -185,6 +185,43 @@ input, button, select, textarea {
   letter-spacing: 2px;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.store-link-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.store-link-banner:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: var(--brand-emerald);
+  transform: translateY(-1px);
+}
+
+.store-link-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #10B981;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #10B981;
+  animation: pulseDot 2s infinite ease-in-out;
 }
 
 .workspace-switcher {
@@ -772,6 +809,143 @@ input, button, select, textarea {
 .icon-btn-subtle:hover {
   background: #EFECE3;
   color: var(--ink);
+}
+
+.top-store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--brand-emerald-light);
+  border: 1px solid #A7F3D0;
+  color: var(--brand-emerald-dark);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.top-store-btn:hover {
+  background: #D1FAE5;
+  border-color: var(--brand-emerald);
+  transform: translateY(-1px);
+}
+
+/* Akira Fresh Brand & Live Storefront Operational Banner */
+.brand-store-banner {
+  background: linear-gradient(135deg, #072416 0%, #0D3E27 100%);
+  border: 1px solid var(--brand-forest-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #FFFFFF;
+  box-shadow: 0 4px 20px rgba(7, 36, 22, 0.16);
+  flex-wrap: wrap;
+}
+
+.brand-store-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-store-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #051A10;
+  border: 1px solid var(--brand-emerald);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px var(--emerald-glow);
+}
+
+.brand-store-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.2px;
+}
+
+.brand-store-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34D399;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.brand-store-desc {
+  font-size: 12px;
+  color: #A7BDB1;
+  margin-top: 2px;
+}
+
+.brand-store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand-emerald);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--emerald-glow);
+  white-space: nowrap;
+}
+
+.brand-store-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--emerald-glow);
+}
+
+/* Product Store Chip */
+.product-store-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brand-emerald-dark);
+  text-decoration: none;
+  background: var(--brand-emerald-light);
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid #A7F3D0;
+  transition: all 0.15s ease;
+}
+
+.product-store-chip:hover {
+  background: #D1FAE5;
+  border-color: var(--brand-emerald);
+  transform: translateY(-1px);
+}
+
+.table-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Metric Cards */

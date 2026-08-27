@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Bell, Snowflake, Menu, X, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Bell, Snowflake, Menu, X, Search, ExternalLink } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 import NotificationPopover from './NotificationPopover';
 
@@ -45,7 +46,7 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
 
         <div className="brand-pill hide-on-mobile-sm">
           <Snowflake size={13} className="snowflake-spin text-emerald" />
-          <span>Blast Frozen &bull; Sub-Zero SLA</span>
+          <span>Blast-Frozen &bull; Sub-Zero SLA</span>
           <span className="pill-dot"></span>
           <span className="pill-temp">-18.6°C</span>
         </div>
@@ -72,6 +73,17 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
           )}
         </form>
 
+        <a
+          href="https://akirafresh.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="top-store-btn hide-on-mobile-sm"
+          title="Visit live consumer store on akirafresh.in"
+        >
+          <span>akirafresh.in</span>
+          <ExternalLink size={12} />
+        </a>
+
         <button
           className="icon-button mobile-search-toggle"
           onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -90,7 +102,9 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
             {unreadCount > 0 && <span className="notif-counter">{unreadCount}</span>}
           </button>
 
-          {showNotifs && <NotificationPopover onClose={() => setShowNotifs(false)} />}
+          <AnimatePresence>
+            {showNotifs && <NotificationPopover onClose={() => setShowNotifs(false)} />}
+          </AnimatePresence>
         </div>
 
         <div

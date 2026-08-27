@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Bell, Check, Package, Truck, AlertTriangle, X } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
@@ -19,7 +20,13 @@ export default function NotificationPopover({ onClose }) {
   };
 
   return (
-    <div className="notification-popover">
+    <motion.div
+      className="notification-popover"
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{ duration: 0.15 }}
+    >
       <div className="notif-header">
         <div className="notif-title">
           <Bell size={16} />
@@ -56,6 +63,6 @@ export default function NotificationPopover({ onClose }) {
       <div className="notif-footer">
         <span>Cold-Chain Monitor: All Hubs Normal (-18°C)</span>
       </div>
-    </div>
+    </motion.div>
   );
 }
