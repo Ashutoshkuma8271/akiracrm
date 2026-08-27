@@ -111,6 +111,12 @@ export function CrmProvider({ children }) {
     }, 3200);
   };
 
+  // Mark all notifications as read
+  const markNotificationsRead = () => {
+    setNotifications((prev) => (prev || []).map((n) => ({ ...n, read: true })));
+    showToast('All notifications marked as read');
+  };
+
   // Customer Operations
   const addCustomer = (customerData) => {
     const initials = customerData.name
