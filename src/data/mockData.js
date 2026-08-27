@@ -635,44 +635,62 @@ export const initialCampaigns = [
   }
 ];
 
-export const initialHubs = [
+export const initialColdChainHubs = [
   {
     id: 'hub-01',
-    name: 'Okhla Central Cold Storage Hub',
-    location: 'Phase 2, Okhla Industrial Area, New Delhi',
-    coverage: ['South Delhi', 'Central Delhi', 'East Delhi', 'Faridabad'],
-    chamberTemp: '-19.4°C',
+    name: 'Gurugram Cyber Cold Hub',
+    location: 'Udyog Vihar Phase 4, Gurugram',
+    subText: '4 vans • 48 orders',
+    coverage: ['Cyber City', 'Golf Course Road', 'Sohna Road', 'DLF 1-5'],
+    chamberTemp: '-19.2°C',
     targetTemp: '-18.0°C',
     status: 'Optimal',
-    activeVans: 8,
-    deliveriesToday: 114,
-    slaScore: '99.4%'
+    activeVans: 4,
+    deliveriesToday: 48,
+    slaScore: '98.6%'
   },
   {
     id: 'hub-02',
-    name: 'Gurugram Cyber Cold Hub',
-    location: 'Udyog Vihar Phase 4, Gurugram',
-    coverage: ['Cyber City', 'Golf Course Road', 'Sohna Road', 'DLF 1-5'],
-    chamberTemp: '-19.8°C',
+    name: 'South Delhi Central Hub',
+    location: 'Phase 2, Okhla Industrial Area, New Delhi',
+    subText: '5 vans • 62 orders',
+    coverage: ['South Delhi', 'Central Delhi', 'East Delhi', 'Faridabad'],
+    chamberTemp: '-18.8°C',
     targetTemp: '-18.0°C',
     status: 'Optimal',
-    activeVans: 7,
-    deliveriesToday: 82,
-    slaScore: '98.8%'
+    activeVans: 5,
+    deliveriesToday: 62,
+    slaScore: '99.1%'
   },
   {
     id: 'hub-03',
-    name: 'Noida Express Cold Storage',
+    name: 'Noida Express Hub',
     location: 'Sector 63, Noida',
+    subText: '3 vans • 34 orders',
     coverage: ['Noida Sec 1-150', 'Greater Noida', 'Ghaziabad Indirapuram'],
-    chamberTemp: '-20.1°C',
+    chamberTemp: '-18.4°C',
     targetTemp: '-18.0°C',
     status: 'Optimal',
-    activeVans: 6,
-    deliveriesToday: 68,
-    slaScore: '99.1%'
+    activeVans: 3,
+    deliveriesToday: 34,
+    slaScore: '96.8%'
+  },
+  {
+    id: 'hub-04',
+    name: 'West Delhi Sub-Hub',
+    location: 'Janakpuri District Centre, New Delhi',
+    subText: '3 vans • 26 orders',
+    coverage: ['Janakpuri', 'Rajouri Garden', 'Dwarka Sec 1-23', 'Punjabi Bagh'],
+    chamberTemp: '-18.6°C',
+    targetTemp: '-18.0°C',
+    status: 'Optimal',
+    activeVans: 3,
+    deliveriesToday: 26,
+    slaScore: '97.4%'
   }
 ];
+
+export const initialHubs = initialColdChainHubs;
 
 export const initialFleet = [
   { vanId: 'DL-1VC-8821', driver: 'Manoj Kumar', phone: '+91 98112 44551', hub: 'Okhla Central', temp: '-18.2°C', zone: 'South Delhi', ordersActive: 4, status: 'On Route' },
@@ -763,5 +781,4 @@ export const initialSettings = {
   coldChainGuarantee: '-18°C Blast Frozen within Delhi NCR'
 };
 
-export const initialColdChainHubs = initialHubs;
 export const initialStoreSettings = initialSettings;

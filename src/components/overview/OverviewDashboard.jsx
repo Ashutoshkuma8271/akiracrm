@@ -99,10 +99,10 @@ export default function OverviewDashboard({ onNavigate }) {
             <Users size={20} />
           </div>
           <div className="metric-copy">
-            <span>VIP Champions</span>
-            <strong>{vipCount} clients</strong>
+            <span>Customers</span>
+            <strong>{customers.length} total</strong>
             <p>
-              <b>{atRiskCount}</b> need attention
+              <b>{vipCount} VIP</b> members
             </p>
           </div>
           <span className="metric-arrow">
@@ -112,13 +112,13 @@ export default function OverviewDashboard({ onNavigate }) {
 
         <div className="metric-card">
           <div className="metric-icon blue">
-            <Snowflake size={20} />
+            <AlertCircle size={20} />
           </div>
           <div className="metric-copy">
-            <span>Cold-Chain Mean</span>
-            <strong>-18.6°C</strong>
-            <p>
-              <b>100%</b> sub-zero verified
+            <span>At Risk</span>
+            <strong>{atRiskCount} contacts</strong>
+            <p className="negative">
+              <b>{atRiskCount}</b> win-back
             </p>
           </div>
           <span className="metric-arrow">
@@ -133,11 +133,11 @@ export default function OverviewDashboard({ onNavigate }) {
         <div className="workspace-card">
           <div className="card-heading">
             <div>
-              <strong>Product Revenue Contribution</strong>
-              <small>Real-time Delhi NCR category run rates</small>
+              <strong>Akira Fresh Product Mix & Revenue</strong>
+              <small>Real-time share across blast-frozen categories</small>
             </div>
             <button className="text-button" onClick={() => onNavigate('Products')}>
-              Manage Catalog <span>→</span>
+              View All <span>→</span>
             </button>
           </div>
 
@@ -163,24 +163,24 @@ export default function OverviewDashboard({ onNavigate }) {
         <div className="workspace-card">
           <div className="card-heading">
             <div>
-              <strong>Delhi NCR Hub Telemetry</strong>
-              <small>Real-time blast-freezer chamber monitoring</small>
+              <strong>Delhi NCR Cold Hub Status</strong>
+              <small>Blast frozen temp (-18°C) monitoring</small>
             </div>
             <span className="live-status-pill">
-              <span className="live-dot" /> Live SLA 99.1%
+              <span className="live-dot" /> LIVE
             </span>
           </div>
 
           <div className="hub-status-list">
-            {(hubs || []).slice(0, 3).map((hub) => (
+            {(hubs || []).slice(0, 4).map((hub) => (
               <div key={hub?.id || hub?.name || Math.random()} className="hub-mini-card">
                 <div className="hub-mini-left">
                   <div className="hub-icon-wrap">
-                    <Snowflake size={16} />
+                    <Snowflake size={16} className="text-coral" />
                   </div>
                   <div>
                     <strong>{hub?.name || 'Cold Storage Hub'}</strong>
-                    <small>{hub?.location || 'Delhi NCR'}</small>
+                    <small>{hub?.subText || hub?.location || 'Delhi NCR'}</small>
                   </div>
                 </div>
                 <div className="hub-mini-right">
