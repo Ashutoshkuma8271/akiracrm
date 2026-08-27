@@ -13,49 +13,41 @@ import {
 const CrmContext = createContext();
 
 export function CrmProvider({ children }) {
+  // Helper for safe JSON loading
+  const safeLoad = (key, fallback) => {
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return fallback;
+      const parsed = JSON.parse(item);
+      return parsed && typeof parsed === 'object' ? parsed : fallback;
+    } catch (e) {
+      console.warn(`Error reading localStorage for ${key}:`, e);
+      return fallback;
+    }
+  };
+
   // Admin Profile & Active Staff Member
-  const [adminProfile, setAdminProfile] = useState(() => {
-    const local = localStorage.getItem('akira_admin_profile');
-    return local ? JSON.parse(local) : initialAdminProfile;
-  });
+  const [adminProfile, setAdminProfile] = useState(() => safeLoad('akira_admin_profile', initialAdminProfile));
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Customers
-  const [customers, setCustomers] = useState(() => {
-    const local = localStorage.getItem('akira_customers');
-    return local ? JSON.parse(local) : initialCustomers;
-  });
+  const [customers, setCustomers] = useState(() => safeLoad('akira_customers', initialCustomers));
 
   // Orders
-  const [orders, setOrders] = useState(() => {
-    const local = localStorage.getItem('akira_orders');
-    return local ? JSON.parse(local) : initialOrders;
-  });
+  const [orders, setOrders] = useState(() => safeLoad('akira_orders', initialOrders));
 
   // Products
-  const [products, setProducts] = useState(() => {
-    const local = localStorage.getItem('akira_products');
-    return local ? JSON.parse(local) : initialProducts;
-  });
+  const [products, setProducts] = useState(() => safeLoad('akira_products', initialProducts));
 
   // Campaigns
-  const [campaigns, setCampaigns] = useState(() => {
-    const local = localStorage.getItem('akira_campaigns');
-    return local ? JSON.parse(local) : initialCampaigns;
-  });
+  const [campaigns, setCampaigns] = useState(() => safeLoad('akira_campaigns', initialCampaigns));
 
   // Logistics Hubs
-  const [hubs, setHubs] = useState(() => {
-    const local = localStorage.getItem('akira_hubs');
-    return local ? JSON.parse(local) : initialColdChainHubs;
-  });
+  const [hubs, setHubs] = useState(() => safeLoad('akira_hubs', initialColdChainHubs));
 
   // Settings
-  const [settings, setSettings] = useState(() => {
-    const local = localStorage.getItem('akira_settings');
-    return local ? JSON.parse(local) : initialStoreSettings;
-  });
+  const [settings, setSettings] = useState(() => safeLoad('akira_settings', initialStoreSettings));
 
   // UI state
   const [toast, setToast] = useState(null);
