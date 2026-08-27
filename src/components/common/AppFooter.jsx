@@ -1,9 +1,9 @@
 import React from 'react';
-import { ShieldCheck, Snowflake, Phone, Mail, ExternalLink, Heart, Clock } from 'lucide-react';
+import { ShieldCheck, Snowflake, Phone, Mail } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
 export default function AppFooter({ onNavigate }) {
-  const { settings } = useCrm();
+  const { settings = {} } = useCrm();
 
   return (
     <footer className="crm-app-footer">
@@ -27,7 +27,7 @@ export default function AppFooter({ onNavigate }) {
         <div className="footer-trust-col">
           <div className="footer-badge-pill">
             <ShieldCheck size={14} className="text-emerald" />
-            <span>FSSAI Lic: {settings.fssaiNumber || '13324008000492'}</span>
+            <span>FSSAI Lic: {settings?.fssaiNumber || '13324008000492'}</span>
           </div>
           <div className="footer-badge-pill">
             <Snowflake size={14} className="text-cyan" />
