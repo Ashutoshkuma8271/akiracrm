@@ -78,9 +78,22 @@ export default function CampaignsView() {
     return customers.filter(c => c.tag === seg).length || customers.length;
   };
 
-  const totalCampaignRevenue = campaigns.reduce((acc, c) => acc + (c.revenueGenerated || 0), 0);
-  const totalConversions = campaigns.reduce((acc, c) => acc + (c.conversions || 0), 0);
-  const totalBroadcastsSent = campaigns.reduce((acc, c) => acc + (c.sentCount || 0), 0);
+  const totalCampaignRevenue = campaigns.reduce((acc, c) => {
+    const rev = typeof c.revenueGenerated === 'number' ? c.revenueGenerated : Number(String(c.revenueGenerated || '').replace(/[^\d]/g, '')) || 0;
+    return acc + rev;
+  }, 0);
+  const totalConversions = campaigns.reduce((acc, c) => acc + (Number(c.conversions) || Number(c.ordersGenerated) || 0), 0);
+  const totalBroadcastsSent = campaigns.reduce((acc, c) => acc + (Number(c.sentCount) || 0), 0);
+
+  const formatCampaignMessage = (camp, name = 'Priya') => {
+    const rawTemplate = camp?.messageTemplate || camp?.messagePreview || camp?.message || 'Hi {{name}}! Check out the latest Akira Fresh drop with code {{code}} at https://akirafresh.in';
+    const code = camp?.couponCode || camp?.code || 'AKIRAFRESH';
+    const discount = camp?.discount || 'Special Offer';
+    return String(rawTemplate)
+      .replace(/\{\{name\}\}/g, name)
+      .replace(/\{\{code\}\}/g, code)
+      .replace(/\{\{discount\}\}/g, discount);
+  };
 
   const handleCreateSubmit = (e) => {
     e.preventDefault();
@@ -217,143 +230,147 @@ export default function CampaignsView() {
         layout
         transition={{ duration: 0.2 }}
       >
-        {campaigns.map((camp) => (
-          <div key={camp.id} className="campaign-card">
-            <div className="campaign-card-top">
-              <div className="channel-badge-wrap">
-                {camp.channel === 'WhatsApp' ? (
-                  <span className="channel-badge whatsapp">
-                    <MessageSquare size={13} /> WhatsApp Broadcast
-                  </span>
-                ) : (
-                  <span className="channel-badge email">
-                    <Mail size={13} /> Email Newsletter
-                  </span>
-                )}
-                <span className={`status-pill ${camp.status.toLowerCase()}`}>{camp.status}</span>
-              </div>
+        {campaigns.map((camp) => {
+          const campTitle = camp.title || camp.name || 'Akira Fresh Broadcast';
+          const campCode = camp.couponCode || camp.code || 'AKIRAFRESH';
+          const campSegment = camp.targetSegment || camp.audience || 'VIP & Repeat Buyers';
+          const formattedMessage = formatCampaignMessage(camp);
+          const campRev = typeof camp.revenueGenerated === 'number' ? camp.revenueGenerated : Number(String(camp.revenueGenerated || '').replace(/[^\d]/g, '')) || 0;
+          const campConv = camp.conversions || camp.ordersGenerated || 0;
 
-              <div
-                className="coupon-pill"
-                onClick={() => handleCopyCode(camp.couponCode)}
-                title="Click to copy coupon code"
-              >
-                <code>{camp.couponCode}</code>
-                <Copy size={11} />
-              </div>
-            </div>
+          return (
+            <div key={camp.id} className="campaign-card">
+              <div className="campaign-card-top">
+                <div className="channel-badge-wrap">
+                  {camp.channel === 'WhatsApp' ? (
+                    <span className="channel-badge whatsapp">
+                      <MessageSquare size={13} /> WhatsApp Broadcast
+                    </span>
+                  ) : (
+                    <span className="channel-badge email">
+                      <Mail size={13} /> Email Newsletter
+                    </span>
+                  )}
+                  <span className={`status-pill ${(camp.status || 'Active').toLowerCase()}`}>{camp.status || 'Active'}</span>
+                </div>
 
-            <h3 className="campaign-title">{camp.title}</h3>
-            <p className="campaign-discount-text">{camp.discount}</p>
-
-            <div className="campaign-audience-box">
-              <Users size={14} className="text-coral" />
-              <span>Target: <strong>{camp.targetSegment}</strong> ({camp.sentCount || 850} reach)</span>
-            </div>
-
-            {/* Live WhatsApp Bubble Preview */}
-            <div className="whatsapp-preview-card">
-              <div className="wa-bubble-header">
-                <div className="wa-sender-avatar">AF</div>
-                <div>
-                  <strong>Akira Fresh Official</strong>
-                  <small>Sub-Zero Cold Chain &bull; FSSAI Verified</small>
+                <div
+                  className="coupon-pill"
+                  onClick={() => handleCopyCode(campCode)}
+                  title="Click to copy coupon code"
+                >
+                  <code>{campCode}</code>
+                  <Copy size={11} />
                 </div>
               </div>
 
-              {(() => {
-                // Determine relevant non-veg visual for the campaign
-                let bannerImg = null;
-                const lowerTitle = (camp.title + ' ' + (camp.discount || '')).toLowerCase();
-                if (lowerTitle.includes('momo')) {
-                  bannerImg = products.find(p => p.sku === 'AF-MOM-01')?.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
-                } else if (lowerTitle.includes('patty') || lowerTitle.includes('burger')) {
-                  bannerImg = products.find(p => p.sku === 'AF-PAT-01')?.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80';
-                } else if (lowerTitle.includes('tikka') || lowerTitle.includes('kebab') || lowerTitle.includes('barbecue') || lowerTitle.includes('grill')) {
-                  bannerImg = products.find(p => p.sku === 'AF-TIK-01' || p.sku === 'AF-SEEKH-01')?.image || 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80';
-                } else if (lowerTitle.includes('tub') || lowerTitle.includes('stock') || lowerTitle.includes('inactive') || lowerTitle.includes('spenders')) {
-                  bannerImg = products.find(p => p.sku === 'AF-TUB-01')?.image || 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80';
-                }
+              <h3 className="campaign-title">{campTitle}</h3>
+              <p className="campaign-discount-text">{camp.discount || 'Special Offer'}</p>
 
-                if (!bannerImg) return null;
+              <div className="campaign-audience-box">
+                <Users size={14} className="text-coral" />
+                <span>Target: <strong>{campSegment}</strong> ({camp.sentCount || 520} reach)</span>
+              </div>
 
-                return (
-                  <div className="wa-media-banner">
-                    <img
-                      src={bannerImg}
-                      alt="Akira Fresh Promo"
-                      className="wa-media-img"
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
-                      }}
-                    />
-                    <span className="wa-media-tag">🍗 Akira Fresh Non-Veg Cold Drop</span>
+              {/* Live WhatsApp Bubble Preview */}
+              <div className="whatsapp-preview-card">
+                <div className="wa-bubble-header">
+                  <div className="wa-sender-avatar">AF</div>
+                  <div>
+                    <strong>Akira Fresh Official</strong>
+                    <small>Sub-Zero Cold Chain &bull; FSSAI Verified</small>
                   </div>
-                );
-              })()}
+                </div>
 
-              <p className="wa-bubble-text">
-                {camp.messageTemplate
-                  .replace('{{name}}', 'Priya')
-                  .replace('{{code}}', camp.couponCode)
-                  .replace('{{discount}}', camp.discount)}
-              </p>
-              <div className="wa-bubble-time">
-                <span>{camp.scheduledTime || 'Just now'}</span>
-                <CheckCheck size={13} className="text-cyan" />
+                {(() => {
+                  // Determine relevant non-veg visual for the campaign
+                  let bannerImg = null;
+                  const lowerTitle = (campTitle + ' ' + (camp.discount || '')).toLowerCase();
+                  if (lowerTitle.includes('momo')) {
+                    bannerImg = products.find(p => p.sku === 'AF-MOM-01')?.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                  } else if (lowerTitle.includes('patty') || lowerTitle.includes('burger')) {
+                    bannerImg = products.find(p => p.sku === 'AF-PAT-01')?.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80';
+                  } else if (lowerTitle.includes('tikka') || lowerTitle.includes('kebab') || lowerTitle.includes('barbecue') || lowerTitle.includes('grill')) {
+                    bannerImg = products.find(p => p.sku === 'AF-TIK-01' || p.sku === 'AF-SEEKH-01')?.image || 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80';
+                  } else if (lowerTitle.includes('tub') || lowerTitle.includes('stock') || lowerTitle.includes('inactive') || lowerTitle.includes('spenders')) {
+                    bannerImg = products.find(p => p.sku === 'AF-TUB-01')?.image || 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80';
+                  }
+
+                  if (!bannerImg) return null;
+
+                  return (
+                    <div className="wa-media-banner">
+                      <img
+                        src={bannerImg}
+                        alt="Akira Fresh Promo"
+                        className="wa-media-img"
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                        }}
+                      />
+                      <span className="wa-media-tag">🍗 Akira Fresh Non-Veg Cold Drop</span>
+                    </div>
+                  );
+                })()}
+
+                <p className="wa-bubble-text">
+                  {formattedMessage}
+                </p>
+                <div className="wa-bubble-time">
+                  <span>{camp.scheduledTime || 'Just now'}</span>
+                  <CheckCheck size={13} className="text-cyan" />
+                </div>
+              </div>
+
+              {/* Performance Stats */}
+              <div className="campaign-metrics-row">
+                <div>
+                  <span>Open Rate</span>
+                  <strong>{camp.openRate || '88%'}</strong>
+                </div>
+                <div>
+                  <span>Click Rate</span>
+                  <strong>{camp.clickRate || '45%'}</strong>
+                </div>
+                <div>
+                  <span>Conversions</span>
+                  <strong>{campConv} orders</strong>
+                </div>
+                <div>
+                  <span>Revenue</span>
+                  <strong className="text-green">₹{campRev.toLocaleString('en-IN')}</strong>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="campaign-card-footer">
+                <a
+                  href={`https://wa.me/918512877877?text=${encodeURIComponent(formattedMessage)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whatsapp-test-btn"
+                >
+                  <Send size={13} /> Test on WhatsApp <ExternalLink size={12} />
+                </a>
+
+                <button
+                  className="secondary-button-sm"
+                  onClick={() => {
+                    try {
+                      confetti({ particleCount: 30, spread: 40 });
+                    } catch(e){}
+                    showToast(`Broadcast triggered for ${camp.sentCount || 520} customers in ${campSegment}`);
+                  }}
+                >
+                  Trigger Broadcast
+                </button>
               </div>
             </div>
-
-            {/* Performance Stats */}
-            <div className="campaign-metrics-row">
-              <div>
-                <span>Open Rate</span>
-                <strong>{camp.openRate}</strong>
-              </div>
-              <div>
-                <span>Click Rate</span>
-                <strong>{camp.clickRate}</strong>
-              </div>
-              <div>
-                <span>Conversions</span>
-                <strong>{camp.conversions} orders</strong>
-              </div>
-              <div>
-                <span>Revenue</span>
-                <strong className="text-green">₹{(camp.revenueGenerated || 0).toLocaleString('en-IN')}</strong>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="campaign-card-footer">
-              <a
-                href={`https://wa.me/918512877877?text=${encodeURIComponent(
-                  camp.messageTemplate.replace('{{name}}', 'Priya').replace('{{code}}', camp.couponCode).replace('{{discount}}', camp.discount)
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="whatsapp-test-btn"
-              >
-                <Send size={13} /> Test on WhatsApp <ExternalLink size={12} />
-              </a>
-
-              <button
-                className="secondary-button-sm"
-                onClick={() => {
-                  try {
-                    confetti({ particleCount: 30, spread: 40 });
-                  } catch(e){}
-                  showToast(`Broadcast triggered for ${camp.sentCount || 850} customers in ${camp.targetSegment}`);
-                }}
-              >
-                Trigger Broadcast
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </motion.div>
 
       {/* Retention Insights Strip */}

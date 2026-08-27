@@ -590,48 +590,63 @@ export const initialOrders = [
 export const initialCampaigns = [
   {
     id: 'camp-101',
+    title: 'Weekend Barbecue Blast (Delhi NCR)',
     name: 'Weekend Barbecue Blast (Delhi NCR)',
     channel: 'WhatsApp',
+    targetSegment: 'VIP & Frequent Repeat Buyers',
     audience: 'VIP & Frequent Repeat Buyers (520 contacts)',
     discount: 'Flat 15% OFF on Kebabs & Tikkas',
+    couponCode: 'GRILL15',
     code: 'GRILL15',
     status: 'Active',
     sentCount: 520,
     openRate: '88.4%',
     clickRate: '42.1%',
+    conversions: 78,
     ordersGenerated: 78,
-    revenueGenerated: '₹48,360',
-    messagePreview: '🍗 Hey {{name}}! Fire up your weekend with Akira Fresh blast-frozen kebabs. Use code *GRILL15* for flat 15% off tender Galouti & Seekh kebabs delivered at -18°C within 2 hours in Delhi NCR: akirafresh.in/deal'
+    revenueGenerated: 48360,
+    messageTemplate: '🍗 Hey {{name}}! Fire up your weekend with Akira Fresh blast-frozen kebabs. Use code *{{code}}* for {{discount}} delivered at -18°C within 2 hours in Delhi NCR: https://akirafresh.in',
+    messagePreview: '🍗 Hey {{name}}! Fire up your weekend with Akira Fresh blast-frozen kebabs. Use code *GRILL15* for flat 15% off tender Galouti & Seekh kebabs delivered at -18°C within 2 hours in Delhi NCR: https://akirafresh.in'
   },
   {
     id: 'camp-102',
+    title: '1kg Family Tub Stock-Up Surge',
     name: '1kg Family Tub Stock-Up Surge',
     channel: 'WhatsApp',
+    targetSegment: 'High AOV Customers (>₹500 LTV)',
     audience: 'High AOV Customers (>₹500 LTV)',
     discount: 'Free Momos Pack on 1kg Tubs',
+    couponCode: 'STOCKUP',
     code: 'STOCKUP',
     status: 'Active',
     sentCount: 380,
     openRate: '91.2%',
     clickRate: '51.3%',
+    conversions: 64,
     ordersGenerated: 64,
-    revenueGenerated: '₹41,600',
-    messagePreview: '📦 Stock up your freezer with 1kg Jumbo Tubs and get 10pcs Juicy Chicken Momos FREE! Tap to claim: akirafresh.in/tubs'
+    revenueGenerated: 41600,
+    messageTemplate: '📦 Hi {{name}}! Stock up your freezer with 1kg Jumbo Tubs and get 10pcs Juicy Chicken Momos FREE with code {{code}}! Tap to claim: https://akirafresh.in',
+    messagePreview: '📦 Stock up your freezer with 1kg Jumbo Tubs and get 10pcs Juicy Chicken Momos FREE! Tap to claim: https://akirafresh.in'
   },
   {
     id: 'camp-103',
+    title: 'Win-Back Inactive High-Spenders',
     name: 'Win-Back Inactive High-Spenders',
     channel: 'WhatsApp',
+    targetSegment: 'Inactive >20 Days',
     audience: 'Inactive >20 Days (145 contacts)',
     discount: 'Flat ₹150 OFF on orders >₹599',
+    couponCode: 'COMEBACK150',
     code: 'COMEBACK150',
     status: 'Scheduled',
     sentCount: 145,
     openRate: '79.0%',
     clickRate: '34.8%',
+    conversions: 22,
     ordersGenerated: 22,
-    revenueGenerated: '₹14,960',
-    messagePreview: '👋 We miss you at Akira Fresh! Here is ₹150 OFF your next cold-chain snack drop. Use code *COMEBACK150* before Sunday: akirafresh.in'
+    revenueGenerated: 14960,
+    messageTemplate: '👋 We miss you at Akira Fresh, {{name}}! Here is {{discount}} using code *{{code}}* before Sunday: https://akirafresh.in',
+    messagePreview: '👋 We miss you at Akira Fresh! Here is ₹150 OFF your next cold-chain snack drop. Use code *COMEBACK150* before Sunday: https://akirafresh.in'
   }
 ];
 

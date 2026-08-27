@@ -40,8 +40,21 @@ export function CrmProvider({ children }) {
   // Products
   const [products, setProducts] = useState(() => safeLoad('akira_products', initialProducts));
 
-  // Campaigns
-  const [campaigns, setCampaigns] = useState(() => safeLoad('akira_campaigns', initialCampaigns));
+  // Campaigns with safe normalization
+  const [campaigns, setCampaigns] = useState(() => {
+    const raw = safeLoad('akira_campaigns', initialCampaigns);
+    if (!Array.isArray(raw) || raw.length === 0) return initialCampaigns;
+    return raw.map((c) => ({
+      ...c,
+      title: c.title || c.name || 'Akira Fresh Broadcast',
+      couponCode: c.couponCode || c.code || 'AKIRAFRESH',
+      targetSegment: c.targetSegment || c.audience || 'All Customers',
+      discount: c.discount || 'Special Offer',
+      messageTemplate: c.messageTemplate || c.messagePreview || 'Hi {{name}}! Check out latest Akira Fresh non-veg drop with code {{code}} at https://akirafresh.in',
+      revenueGenerated: typeof c.revenueGenerated === 'number' ? c.revenueGenerated : Number(String(c.revenueGenerated || '').replace(/[^\d]/g, '')) || 0,
+      conversions: typeof c.conversions === 'number' ? c.conversions : Number(c.ordersGenerated) || 0
+    }));
+  });
 
   // Logistics Hubs
   const [hubs, setHubs] = useState(() => safeLoad('akira_hubs', initialColdChainHubs));
