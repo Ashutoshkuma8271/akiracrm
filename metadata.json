@@ -1,0 +1,6 @@
+{
+  "name": "Akira Fresh CRM",
+  "description": "Cold-Chain Operations & Customer Hub for Akira Fresh ready-to-cook frozen foods",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
