@@ -8,7 +8,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 
-  /* Akira Fresh Brand Colors (Matching akira-fresh.vercel.app) */
+  /* Akira Fresh Brand Colors */
   --brand-forest: #0B2B1B;
   --brand-forest-card: #133924;
   --brand-forest-hover: #19462d;
@@ -107,7 +107,7 @@ body {
 .sidebar-mobile-close {
   display: none;
   border: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
   width: 34px;
   height: 34px;
@@ -437,6 +437,10 @@ body {
 
 .text-emerald {
   color: var(--brand-emerald) !important;
+}
+
+.text-cyan {
+  color: #0284C7 !important;
 }
 
 .snowflake-spin {
@@ -2794,6 +2798,117 @@ body {
   gap: 12px;
 }
 
+/* Responsive CRM App Footer */
+.crm-app-footer {
+  margin-top: 48px;
+  background: linear-gradient(180deg, #FAF8F2 0%, #F2EFE6 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.footer-top-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.footer-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #0B2B1B;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--brand-emerald);
+}
+
+.footer-brand strong {
+  font: 800 16px 'Playfair Display', serif;
+  color: var(--brand-forest);
+}
+
+.footer-tagline {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.footer-trust-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.footer-contact-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.footer-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-emerald-dark);
+  text-decoration: none;
+  background: #FFFFFF;
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+}
+
+.footer-contact-link:hover {
+  background: #ECFDF5;
+  border-color: var(--brand-emerald);
+}
+
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.footer-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #047857;
+}
+
 /* Notifications Popover */
 .notification-popover {
   position: absolute;
@@ -2911,15 +3026,21 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
-  background: rgba(11, 43, 27, 0.95);
-  backdrop-filter: blur(16px);
-  border-top: 1px solid var(--brand-forest-border);
-  z-index: 60;
+  background: rgba(7, 31, 19, 0.94);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid #1a4d31;
+  z-index: 70;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-bottom-nav-inner {
+  display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0 4px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .bottom-nav-item {
@@ -2930,19 +3051,22 @@ body {
   gap: 3px;
   background: transparent;
   border: 0;
-  color: #A7BDB1;
-  font-size: 10px;
-  font-weight: 600;
+  color: #94A89E;
+  font-size: 9px;
+  font-weight: 700;
   cursor: pointer;
   flex: 1;
-  padding: 6px 0;
+  padding: 6px 2px;
   transition: all 0.15s;
+  min-height: 48px;
 }
 
 .bottom-nav-icon-wrap {
   position: relative;
   display: grid;
   place-items: center;
+  width: 26px;
+  height: 24px;
 }
 
 .bottom-nav-badge {
@@ -2956,14 +3080,21 @@ body {
   padding: 1px 4px;
   border-radius: 8px;
   min-width: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .bottom-nav-item.active {
-  color: var(--brand-emerald);
+  color: #4ADE80;
 }
 
 .bottom-nav-item.active .bottom-nav-icon-wrap {
-  filter: drop-shadow(0 0 6px var(--emerald-glow));
+  color: #4ADE80;
+  filter: drop-shadow(0 0 8px var(--emerald-glow));
+}
+
+.bottom-nav-label {
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 /* Sidebar Mobile Overlay */
@@ -2971,7 +3102,7 @@ body {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(7, 31, 19, 0.7);
+  background: rgba(7, 31, 19, 0.75);
   backdrop-filter: blur(6px);
   z-index: 45;
 }
@@ -3034,7 +3165,7 @@ body {
 .text-coral { color: var(--brand-coral) !important; }
 .text-sun { color: #D97706 !important; }
 
-/* 📱 Complete Responsive Breakpoints */
+/* 📱 Responsive Breakpoints & Mobile Optimization */
 
 @media (max-width: 1024px) {
   .sidebar {
@@ -3067,7 +3198,7 @@ body {
   }
 
   .page-wrap {
-    padding: 24px 20px 84px;
+    padding: 24px 20px 92px;
   }
 
   .topbar {
@@ -3096,6 +3227,17 @@ body {
 
   .campaigns-grid {
     grid-template-columns: 1fr;
+  }
+
+  .footer-top-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-contact-col {
+    grid-column: 1 / -1;
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 }
 
@@ -3179,7 +3321,7 @@ body {
     display: none;
   }
 
-  /* Customer list table mobile adaptation */
+  /* Customer list table mobile */
   .table-head {
     display: none;
   }
@@ -3202,7 +3344,7 @@ body {
     color: var(--brand-emerald-dark);
   }
 
-  /* Orders table mobile adaptation */
+  /* Orders table mobile */
   .order-table-head {
     display: none;
   }
@@ -3283,6 +3425,32 @@ body {
     grid-template-columns: 1fr;
   }
 
+  /* Footer on mobile */
+  .crm-app-footer {
+    padding: 20px 18px;
+    margin-top: 32px;
+  }
+
+  .footer-top-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .footer-contact-col {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footer-contact-link {
+    justify-content: center;
+  }
+
+  .footer-bottom-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   /* Modals on mobile: slide up like a bottom sheet */
   .modal-backdrop {
     align-items: flex-end;
@@ -3314,7 +3482,7 @@ body {
   .toast {
     left: 16px;
     right: 16px;
-    bottom: 74px;
+    bottom: 76px;
   }
 }
 
@@ -3335,7 +3503,7 @@ body {
     box-shadow: none;
     padding: 0;
   }
-  .no-print, .modal-close {
+  .no-print, .modal-close, .crm-app-footer, .mobile-bottom-nav {
     display: none !important;
   }
 }

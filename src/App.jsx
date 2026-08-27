@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CrmProvider, useCrm } from './context/CrmContext';
 import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
+import AppFooter from './components/common/AppFooter';
 import MobileBottomNav from './components/common/MobileBottomNav';
 import OverviewDashboard from './components/overview/OverviewDashboard';
 import CustomersView from './components/customers/CustomersView';
@@ -65,6 +66,9 @@ function CrmApp() {
           {activeNav === 'Logistics' && <LogisticsView />}
 
           {activeNav === 'Settings' && <SettingsView />}
+
+          {/* Responsive Global Footer */}
+          <AppFooter onNavigate={(nav) => setActiveNav(nav)} />
         </div>
       </main>
 
