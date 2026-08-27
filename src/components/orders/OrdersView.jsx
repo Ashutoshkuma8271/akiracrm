@@ -6,6 +6,7 @@ import {
   Plus,
   Search,
   Filter,
+  Download,
   Truck,
   Snowflake,
   Printer,
@@ -204,6 +205,72 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
     setTimeout(() => setCopiedOrderId(null), 2000);
   };
 
+  // Export filtered orders dataset to CSV
+  const handleExportCSV = () => {
+    if (filteredOrders.length === 0) {
+      showToast('No orders to export matching current filters', 'error');
+      return;
+    }
+
+    const headers = [
+      'Order ID',
+      'Created At / Slot',
+      'Customer Name',
+      'Customer Phone',
+      'Hub Zone',
+      'Delivery Address',
+      'Items Ordered Summary',
+      'Total Items Qty',
+      'Subtotal (INR)',
+      'Discount (INR)',
+      'Delivery Fee (INR)',
+      'GST Tax (INR)',
+      'Total Amount (INR)',
+      'Payment Method',
+      'Fulfilment Status',
+      'Cold-Chain Telemetry Log',
+      'Delivery Instructions'
+    ];
+
+    const rows = filteredOrders.map((ord) => {
+      const custPhone = ord.phone || ord.customerPhone || '';
+      const itemsSummary = (ord.items || []).map((i) => `${i.qty || 1}x ${i.name}`).join('; ');
+      const itemsCount = (ord.items || []).reduce((acc, i) => acc + (i.qty || 1), 0);
+
+      return [
+        ord.id,
+        `"${(ord.deliverySlot || ord.slot || 'Express Cold Slot').replace(/"/g, '""')}"`,
+        `"${(ord.customerName || 'Customer').replace(/"/g, '""')}"`,
+        `"${custPhone.replace(/"/g, '""')}"`,
+        `"${(ord.zone || 'Delhi NCR').replace(/"/g, '""')}"`,
+        `"${(ord.address || '').replace(/"/g, '""')}"`,
+        `"${itemsSummary.replace(/"/g, '""')}"`,
+        itemsCount,
+        ord.subtotal || ord.totalAmount || 0,
+        ord.discountAmount || 0,
+        ord.deliveryFee || 0,
+        ord.taxAmount || 0,
+        ord.totalAmount || 0,
+        `"${(ord.paymentMethod || 'UPI').replace(/"/g, '""')}"`,
+        `"${(ord.status || 'Placed').replace(/"/g, '""')}"`,
+        `"${(ord.tempLog || '-18.0°C Verified').replace(/"/g, '""')}"`,
+        `"${(ord.notes || '').replace(/"/g, '""')}"`
+      ];
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    const statusSuffix = statusFilter !== 'All' ? `_${statusFilter.toLowerCase().replace(/[\s-]/g, '_')}` : '';
+    const zoneSuffix = zoneFilter !== 'All' ? `_${zoneFilter.slice(0, 8).toLowerCase().replace(/[\s-]/g, '_')}` : '';
+    link.setAttribute('download', `akira_fresh_orders_filtered${statusSuffix}${zoneSuffix}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    showToast(`Downloaded CSV for ${filteredOrders.length} filtered order(s)`);
+  };
+
   return (
     <div className="orders-view-container">
       {/* Header */}
@@ -220,6 +287,13 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
         </div>
 
         <div className="heading-actions">
+          <button
+            className="secondary-button"
+            onClick={handleExportCSV}
+            title={`Download CSV for ${filteredOrders.length} filtered orders`}
+          >
+            <Download size={14} /> Download CSV ({filteredOrders.length})
+          </button>
           <button className="primary-button" onClick={() => setShowCreateModal(true)}>
             <Plus size={15} /> Create New Order
           </button>
@@ -259,7 +333,7 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
           </div>
         </div>
 
-        {/* Zone Dropdown */}
+        {/* Zone Dropdown & Quick Export Button */}
         <div className="zone-select-wrap">
           <span className="filter-label">Hub Zone:</span>
           <select value={zoneFilter} onChange={(e) => setZoneFilter(e.target.value)}>
@@ -269,6 +343,15 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
             <option value="South Delhi (Greater Kailash & GK2)">South Delhi (Greater Kailash & GK2)</option>
             <option value="Noida (Sector 62 & Expressway)">Noida (Sector 62 & Expressway)</option>
           </select>
+
+          <button
+            className="panel-quick-csv-btn"
+            onClick={handleExportCSV}
+            title={`Export ${filteredOrders.length} filtered orders to CSV`}
+          >
+            <Download size={12} />
+            <span>CSV</span>
+          </button>
         </div>
       </div>
 
@@ -431,6 +514,18 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
 
                       return (
                         <div key={index} className="builder-item-row">
+                          {currentProd?.image && (
+                            <img
+                              src={currentProd.image}
+                              alt={currentProd.name}
+                              className="builder-prod-thumb"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                              }}
+                            />
+                          )}
                           <select
                             className="builder-prod-select"
                             value={item.productId}

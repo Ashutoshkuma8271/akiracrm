@@ -330,6 +330,7 @@ export default function ProductsView({ initialCategory = 'All', initialSearchQue
                     alt={prod.name}
                     className="product-card-img"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
@@ -448,6 +449,11 @@ export default function ProductsView({ initialCategory = 'All', initialSearchQue
                       src={prod.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80'}
                       alt=""
                       className="prod-table-thumb"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                      }}
                     />
                     <div>
                       <strong>{prod.name}</strong>

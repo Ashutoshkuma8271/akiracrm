@@ -85,22 +85,42 @@ export default function CustomersView({ onSelectCreateOrder, initialSearchQuery 
     return orders.filter((o) => o.customerId === selectedCustomer.id || o.customerName === selectedCustomer.name);
   }, [orders, selectedCustomer]);
 
-  // Export CSV
+  // Export CSV for current filtered dataset
   const handleExportCSV = () => {
-    const headers = ['ID', 'Name', 'Phone', 'Email', 'Address', 'Zone', 'Tag', 'RFM Cohort', 'Diet Preference', 'Orders', 'Total Spent', 'Favorite Product', 'Notes'];
-    const rows = customers.map((c) => [
+    if (filteredCustomers.length === 0) {
+      showToast('No customers to export matching current filters', 'error');
+      return;
+    }
+
+    const headers = [
+      'Customer ID',
+      'Name',
+      'Phone',
+      'Email',
+      'Delivery Address',
+      'Delhi NCR Hub Zone',
+      'Customer Segment Tag',
+      'RFM Cohort',
+      'Dietary Preference',
+      'Total Orders Count',
+      'Lifetime Spent (INR)',
+      'Favorite Product',
+      'Internal CRM Notes'
+    ];
+
+    const rows = filteredCustomers.map((c) => [
       c.id,
-      `"${c.name}"`,
-      `"${c.phone}"`,
-      `"${c.email}"`,
-      `"${c.address || ''}"`,
-      `"${c.zone || 'Delhi NCR'}"`,
-      `"${c.tag}"`,
-      `"${c.rfmCohort || 'Regular'}"`,
-      `"${c.dietPreference || 'Standard'}"`,
+      `"${(c.name || '').replace(/"/g, '""')}"`,
+      `"${(c.phone || '').replace(/"/g, '""')}"`,
+      `"${(c.email || '').replace(/"/g, '""')}"`,
+      `"${(c.address || c.location || '').replace(/"/g, '""')}"`,
+      `"${(c.zone || 'Delhi NCR').replace(/"/g, '""')}"`,
+      `"${(c.tag || 'New').replace(/"/g, '""')}"`,
+      `"${(c.rfmCohort || 'Regular').replace(/"/g, '""')}"`,
+      `"${(c.dietPreference || 'Standard').replace(/"/g, '""')}"`,
       c.ordersCount || 0,
       c.totalSpent || 0,
-      `"${c.favoriteProduct || ''}"`,
+      `"${(c.favoriteProduct || '').replace(/"/g, '""')}"`,
       `"${(c.notes || '').replace(/"/g, '""')}"`
     ]);
 
@@ -108,11 +128,12 @@ export default function CustomersView({ onSelectCreateOrder, initialSearchQuery 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `akira_fresh_customers_${new Date().toISOString().slice(0, 10)}.csv`);
+    const filterSuffix = filterTag !== 'All customers' ? `_${filterTag.toLowerCase().replace(/\s+/g, '_')}` : '';
+    link.setAttribute('download', `akira_fresh_customers_filtered${filterSuffix}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
-    showToast('Customer directory exported to CSV');
+    showToast(`Downloaded CSV for ${filteredCustomers.length} filtered customer(s)`);
   };
 
   // Import CSV
@@ -219,10 +240,14 @@ export default function CustomersView({ onSelectCreateOrder, initialSearchQuery 
         </div>
 
         <div className="heading-actions">
-          <button className="secondary-button" onClick={handleExportCSV}>
-            <Download size={14} /> Export CSV
+          <button
+            className="secondary-button"
+            onClick={handleExportCSV}
+            title={`Download CSV for ${filteredCustomers.length} filtered customer records`}
+          >
+            <Download size={14} /> Download CSV ({filteredCustomers.length})
           </button>
-          <button className="secondary-button" onClick={() => fileInputRef.current?.click()}>
+          <button className="secondary-button" onClick={() => fileInputRef.current?.click()} title="Import customer list from CSV">
             <Upload size={14} /> Import CSV
           </button>
           <input
@@ -258,19 +283,30 @@ export default function CustomersView({ onSelectCreateOrder, initialSearchQuery 
               )}
             </div>
 
-            <div className="filter-row">
-              {['All customers', 'VIP', 'Repeat buyer', 'New', 'At risk'].map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setFilterTag(tag)}
-                  className={filterTag === tag ? 'filter-chip selected' : 'filter-chip'}
-                >
-                  {tag}
-                  {tag === 'All customers' && <span>({customers.length})</span>}
-                  {tag === 'VIP' && <span>({customers.filter((c) => c.tag === 'VIP').length})</span>}
-                  {tag === 'At risk' && <span>({customers.filter((c) => c.tag === 'At risk').length})</span>}
-                </button>
-              ))}
+            <div className="filter-row customer-filter-bar">
+              <div className="filter-chips-scroll">
+                {['All customers', 'VIP', 'Repeat buyer', 'New', 'At risk'].map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => setFilterTag(tag)}
+                    className={filterTag === tag ? 'filter-chip selected' : 'filter-chip'}
+                  >
+                    {tag}
+                    {tag === 'All customers' && <span>({customers.length})</span>}
+                    {tag === 'VIP' && <span>({customers.filter((c) => c.tag === 'VIP').length})</span>}
+                    {tag === 'At risk' && <span>({customers.filter((c) => c.tag === 'At risk').length})</span>}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                className="panel-quick-csv-btn"
+                onClick={handleExportCSV}
+                title={`Export ${filteredCustomers.length} filtered customers to CSV`}
+              >
+                <Download size={12} />
+                <span>CSV</span>
+              </button>
             </div>
           </div>
 
