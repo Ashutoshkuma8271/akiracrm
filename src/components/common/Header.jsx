@@ -4,7 +4,7 @@ import { useCrm } from '../../context/CrmContext';
 import NotificationPopover from './NotificationPopover';
 
 export default function Header({ activeNav, setActiveNav, onGlobalSearch, onToggleMobileSidebar, isMobileSidebarOpen }) {
-  const { notifications, showToast } = useCrm();
+  const { notifications, showToast, adminProfile, setIsProfileModalOpen } = useCrm();
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -89,11 +89,19 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
           {showNotifs && <NotificationPopover onClose={() => setShowNotifs(false)} />}
         </div>
 
-        <div className="top-avatar-wrap" title="Administrator: Shreya Kapoor">
-          <div className="top-avatar">SK</div>
+        <div
+          className="top-avatar-wrap clickable"
+          title={`Administrator: ${adminProfile.name} (Click to manage profile)`}
+          onClick={() => setIsProfileModalOpen(true)}
+          role="button"
+          tabIndex={0}
+        >
+          <div className={`top-avatar ${adminProfile.avatarColor || 'coral'}`}>
+            {adminProfile.avatarInitials || 'SK'}
+          </div>
           <div className="admin-status hide-on-mobile">
-            <strong>Shreya Kapoor</strong>
-            <small>Operations Lead</small>
+            <strong>{adminProfile.name}</strong>
+            <small>{adminProfile.role}</small>
           </div>
         </div>
       </div>

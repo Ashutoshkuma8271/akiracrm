@@ -16,7 +16,7 @@ import {
 import { useCrm } from '../../context/CrmContext';
 
 export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onCloseMobile }) {
-  const { customers, orders, products, campaigns } = useCrm();
+  const { customers, orders, products, campaigns, adminProfile, setIsProfileModalOpen } = useCrm();
 
   const mainNav = [
     { label: 'Overview', icon: LayoutDashboard, badge: null },
@@ -122,11 +122,22 @@ export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onClose
           </div>
         </div>
 
-        <div className="sidebar-footer">
-          <div className="user-avatar">SK</div>
+        <div
+          className="sidebar-footer clickable"
+          onClick={() => {
+            setIsProfileModalOpen(true);
+            if (onCloseMobile) onCloseMobile();
+          }}
+          title="Click to edit administrator profile & switch operator"
+          role="button"
+          tabIndex={0}
+        >
+          <div className={`user-avatar ${adminProfile.avatarColor || 'coral'}`}>
+            {adminProfile.avatarInitials || 'SK'}
+          </div>
           <div className="user-info">
-            <strong>Shreya Kapoor</strong>
-            <small>Operations Administrator</small>
+            <strong>{adminProfile.name}</strong>
+            <small>{adminProfile.role}</small>
           </div>
         </div>
       </aside>

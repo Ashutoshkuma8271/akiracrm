@@ -5,12 +5,22 @@ import {
   initialProducts,
   initialCampaigns,
   initialColdChainHubs,
-  initialStoreSettings
+  initialStoreSettings,
+  initialAdminProfile,
+  staffTeamList
 } from '../data/mockData';
 
 const CrmContext = createContext();
 
 export function CrmProvider({ children }) {
+  // Admin Profile & Active Staff Member
+  const [adminProfile, setAdminProfile] = useState(() => {
+    const local = localStorage.getItem('akira_admin_profile');
+    return local ? JSON.parse(local) : initialAdminProfile;
+  });
+
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
   // Customers
   const [customers, setCustomers] = useState(() => {
     const local = localStorage.getItem('akira_customers');
@@ -372,14 +382,47 @@ export function CrmProvider({ children }) {
     showToast('Full CRM backup downloaded');
   };
 
-  // Mark all notifications read
-  const markNotificationsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  // Persist admin profile
+  useEffect(() => {
+    localStorage.setItem('akira_admin_profile', JSON.stringify(adminProfile));
+  }, [adminProfile]);
+
+  // Update admin profile
+  const updateAdminProfile = (updates) => {
+    setAdminProfile((prev) => ({ ...prev, ...updates }));
+    showToast('Admin profile updated successfully');
+  };
+
+  // Switch active staff member
+  const switchAdminStaff = (staffId) => {
+    const found = staffTeamList.find((s) => s.id === staffId);
+    if (found) {
+      setAdminProfile((prev) => ({
+        ...prev,
+        id: found.id,
+        name: found.name,
+        email: found.email,
+        phone: found.phone,
+        role: found.role,
+        hubAssigned: found.hubAssigned,
+        avatarInitials: found.avatarInitials,
+        avatarColor: found.avatarColor,
+        fssaiSupervisorId: found.fssaiSupervisorId || prev.fssaiSupervisorId,
+        shift: found.shift || prev.shift
+      }));
+      showToast(`Switched active operator to ${found.name}`);
+    }
   };
 
   return (
     <CrmContext.Provider
       value={{
+        adminProfile,
+        isProfileModalOpen,
+        setIsProfileModalOpen,
+        staffTeamList,
+        updateAdminProfile,
+        switchAdminStaff,
         customers,
         orders,
         products,

@@ -4,6 +4,7 @@ import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
 import AppFooter from './components/common/AppFooter';
 import MobileBottomNav from './components/common/MobileBottomNav';
+import AdminProfileModal from './components/common/AdminProfileModal';
 import OverviewDashboard from './components/overview/OverviewDashboard';
 import CustomersView from './components/customers/CustomersView';
 import OrdersView from './components/orders/OrdersView';
@@ -17,7 +18,7 @@ function CrmApp() {
   const [activeNav, setActiveNav] = useState('Overview');
   const [selectedCustomerForOrder, setSelectedCustomerForOrder] = useState(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { toast } = useCrm();
+  const { toast, isProfileModalOpen, setIsProfileModalOpen } = useCrm();
 
   const handleCreateOrderForCustomer = (customer) => {
     setSelectedCustomerForOrder(customer);
@@ -74,6 +75,11 @@ function CrmApp() {
 
       {/* Mobile Bottom Navigation Bar */}
       <MobileBottomNav activeNav={activeNav} setActiveNav={setActiveNav} />
+
+      {/* Admin Profile Modal */}
+      {isProfileModalOpen && (
+        <AdminProfileModal onClose={() => setIsProfileModalOpen(false)} />
+      )}
 
       {/* Global Toast Notification */}
       {toast && (

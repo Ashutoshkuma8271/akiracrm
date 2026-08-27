@@ -33,12 +33,13 @@ export default function ProductsView() {
   const categories = [
     'All',
     'Bestsellers',
-    'Flash Sale',
+    'Raw Meats & Seafood',
+    'Kebabs & Tikkas',
+    'Momos & Dimsums',
     'Chicken Snacks',
-    'Kebabs',
-    'Momos',
+    'Mutton Delicacies',
     'Family Packs (1kg)',
-    'Mutton Delicacies'
+    'Flash Sale'
   ];
 
   // Filtered products
@@ -57,7 +58,12 @@ export default function ProductsView() {
       } else if (selectedCategory === 'Flash Sale') {
         matchesCat = Boolean(prod.isFlashSale);
       } else if (selectedCategory !== 'All') {
-        matchesCat = prod.category.toLowerCase() === selectedCategory.toLowerCase();
+        const prodCat = (prod.category || '').toLowerCase();
+        const selCat = selectedCategory.toLowerCase();
+        matchesCat =
+          prodCat === selCat ||
+          prodCat.includes(selCat) ||
+          selCat.includes(prodCat);
       }
 
       return matchesSearch && matchesCat;
