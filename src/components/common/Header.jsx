@@ -4,12 +4,16 @@ import { useCrm } from '../../context/CrmContext';
 import NotificationPopover from './NotificationPopover';
 
 export default function Header({ activeNav, setActiveNav, onGlobalSearch, onToggleMobileSidebar, isMobileSidebarOpen }) {
-  const { notifications, showToast, adminProfile, setIsProfileModalOpen } = useCrm();
+  const { notifications = [], showToast, adminProfile = {}, setIsProfileModalOpen } = useCrm();
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = (notifications || []).filter((n) => !n?.read).length;
+  const adminName = adminProfile?.name || 'Shreya Kapoor';
+  const adminRole = adminProfile?.role || 'Operations Lead';
+  const adminColor = adminProfile?.avatarColor || 'coral';
+  const adminInitials = adminProfile?.avatarInitials || 'SK';
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -17,7 +21,7 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
       if (onGlobalSearch) {
         onGlobalSearch(searchTerm);
       }
-      showToast(`Searching for "${searchTerm}"`);
+      if (showToast) showToast(`Searching for "${searchTerm}"`);
       setShowMobileSearch(false);
     }
   };
@@ -36,7 +40,7 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
         <div className="breadcrumbs">
           <span className="hide-on-mobile">Akira Fresh</span>
           <b className="hide-on-mobile">/</b>
-          <strong>{activeNav}</strong>
+          <strong>{activeNav || 'Overview'}</strong>
         </div>
 
         <div className="brand-pill hide-on-mobile-sm">
@@ -91,17 +95,17 @@ export default function Header({ activeNav, setActiveNav, onGlobalSearch, onTogg
 
         <div
           className="top-avatar-wrap clickable"
-          title={`Administrator: ${adminProfile.name} (Click to manage profile)`}
-          onClick={() => setIsProfileModalOpen(true)}
+          title={`Administrator: ${adminName} (Click to manage profile)`}
+          onClick={() => setIsProfileModalOpen && setIsProfileModalOpen(true)}
           role="button"
           tabIndex={0}
         >
-          <div className={`top-avatar ${adminProfile.avatarColor || 'coral'}`}>
-            {adminProfile.avatarInitials || 'SK'}
+          <div className={`top-avatar ${adminColor}`}>
+            {adminInitials}
           </div>
           <div className="admin-status hide-on-mobile">
-            <strong>{adminProfile.name}</strong>
-            <small>{adminProfile.role}</small>
+            <strong>{adminName}</strong>
+            <small>{adminRole}</small>
           </div>
         </div>
       </div>

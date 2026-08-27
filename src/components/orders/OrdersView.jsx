@@ -270,33 +270,33 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
 
                   {/* Customer Details */}
                   <div className="order-cust-cell">
-                    <strong>{ord.customerName}</strong>
+                    <strong>{ord.customerName || 'Customer'}</strong>
                     <small>
-                      <Phone size={10} /> {custPhone} &bull; {ord.zone || 'Delhi NCR'}
+                      <Phone size={10} /> {custPhone || '+91 98100 00000'} &bull; {ord.zone || 'Delhi NCR'}
                     </small>
                   </div>
 
                   {/* Items List */}
                   <div className="order-items-cell">
-                    {ord.items.map((item, idx) => (
+                    {Array.isArray(ord.items) && ord.items.map((item, idx) => (
                       <span key={idx} className="order-item-tag">
-                        {item.qty}x {item.name}
+                        {item.qty || 1}x {item.name || 'Snack'}
                       </span>
                     ))}
                   </div>
 
                   {/* Amount & Mode */}
                   <div className="order-amount-cell">
-                    <strong className="text-green">₹{ord.totalAmount}</strong>
-                    <small>{ord.paymentMethod}</small>
+                    <strong className="text-green">₹{ord.totalAmount || 0}</strong>
+                    <small>{ord.paymentMethod || 'UPI'}</small>
                   </div>
 
                   {/* Status Dropdown */}
                   <div className="order-status-cell">
                     <select
-                      value={ord.status}
+                      value={ord.status || 'Placed'}
                       onChange={(e) => updateOrderStatus(ord.id, e.target.value)}
-                      className={`status-select ${ord.status.toLowerCase().replace(/[\s-]/g, '_')}`}
+                      className={`status-select ${(ord.status || 'placed').toLowerCase().replace(/[\s-]/g, '_')}`}
                     >
                       <option value="Placed">Placed</option>
                       <option value="Packing">Packing</option>
@@ -310,8 +310,8 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
                   {/* Actions */}
                   <div className="order-actions-cell">
                     <a
-                      href={`https://wa.me/${custPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                        `Hi ${ord.customerName}! 🍗 Your Akira Fresh order #${ord.id} is currently ${ord.status}. Temperature verified at -18°C in cryogenic insulation. Slot: ${ord.deliverySlot || ord.slot}. Thank you for choosing Akira Fresh: https://akirafresh.in`
+                      href={`https://wa.me/${(custPhone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                        `Hi ${ord.customerName || 'Customer'}! 🍗 Your Akira Fresh order #${ord.id || ''} is currently ${ord.status || 'In Transit'}. Temperature verified at -18°C in cryogenic insulation. Slot: ${ord.deliverySlot || ord.slot || 'Morning'}. Thank you for choosing Akira Fresh: https://akirafresh.in`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"

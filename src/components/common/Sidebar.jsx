@@ -16,16 +16,28 @@ import {
 import { useCrm } from '../../context/CrmContext';
 
 export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onCloseMobile }) {
-  const { customers, orders, products, campaigns, adminProfile, setIsProfileModalOpen } = useCrm();
+  const {
+    customers = [],
+    orders = [],
+    products = [],
+    campaigns = [],
+    adminProfile = {},
+    setIsProfileModalOpen
+  } = useCrm();
 
   const mainNav = [
     { label: 'Overview', icon: LayoutDashboard, badge: null },
-    { label: 'Customers', icon: Users, badge: customers.length },
-    { label: 'Orders', icon: ShoppingBag, badge: orders.filter((o) => o.status !== 'Delivered').length },
-    { label: 'Products', icon: Package, badge: products.length },
-    { label: 'Campaigns', icon: Megaphone, badge: campaigns.length },
+    { label: 'Customers', icon: Users, badge: (customers || []).length },
+    { label: 'Orders', icon: ShoppingBag, badge: (orders || []).filter((o) => o?.status !== 'Delivered').length },
+    { label: 'Products', icon: Package, badge: (products || []).length },
+    { label: 'Campaigns', icon: Megaphone, badge: (campaigns || []).length },
     { label: 'Logistics', icon: Truck, badge: 'Delhi NCR' }
   ];
+
+  const adminName = adminProfile?.name || 'Shreya Kapoor';
+  const adminRole = adminProfile?.role || 'Operations Lead';
+  const adminColor = adminProfile?.avatarColor || 'coral';
+  const adminInitials = adminProfile?.avatarInitials || 'SK';
 
   const handleNavClick = (label) => {
     setActiveNav(label);
@@ -125,19 +137,19 @@ export default function Sidebar({ activeNav, setActiveNav, isMobileOpen, onClose
         <div
           className="sidebar-footer clickable"
           onClick={() => {
-            setIsProfileModalOpen(true);
+            if (setIsProfileModalOpen) setIsProfileModalOpen(true);
             if (onCloseMobile) onCloseMobile();
           }}
           title="Click to edit administrator profile & switch operator"
           role="button"
           tabIndex={0}
         >
-          <div className={`user-avatar ${adminProfile.avatarColor || 'coral'}`}>
-            {adminProfile.avatarInitials || 'SK'}
+          <div className={`user-avatar ${adminColor}`}>
+            {adminInitials}
           </div>
           <div className="user-info">
-            <strong>{adminProfile.name}</strong>
-            <small>{adminProfile.role}</small>
+            <strong>{adminName}</strong>
+            <small>{adminRole}</small>
           </div>
         </div>
       </aside>

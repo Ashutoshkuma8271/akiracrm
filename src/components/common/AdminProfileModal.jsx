@@ -25,44 +25,47 @@ import { useCrm } from '../../context/CrmContext';
 
 export default function AdminProfileModal({ onClose }) {
   const {
-    adminProfile,
+    adminProfile = {},
     updateAdminProfile,
-    staffTeamList,
+    staffTeamList = [],
     switchAdminStaff,
-    orders,
-    hubs,
+    orders = [],
+    hubs = [],
     showToast
   } = useCrm();
 
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'switch' | 'stats' | 'preferences'
   const [formData, setFormData] = useState({
-    name: adminProfile.name || '',
-    email: adminProfile.email || '',
-    phone: adminProfile.phone || '',
-    role: adminProfile.role || '',
-    hubAssigned: adminProfile.hubAssigned || 'Okhla Central Cold Hub',
-    avatarColor: adminProfile.avatarColor || 'coral',
-    fssaiSupervisorId: adminProfile.fssaiSupervisorId || 'FSSAI-SUP-88219',
-    soundAlerts: adminProfile.soundAlerts ?? true,
-    whatsappAlerts: adminProfile.whatsappAlerts ?? true,
-    autoPrintInvoice: adminProfile.autoPrintInvoice ?? false
+    name: adminProfile?.name || 'Shreya Kapoor',
+    email: adminProfile?.email || 'shreya.kapoor@akirafresh.in',
+    phone: adminProfile?.phone || '+91 98101 22890',
+    role: adminProfile?.role || 'Operations & Dispatch Lead',
+    hubAssigned: adminProfile?.hubAssigned || 'Okhla Central Cold Hub',
+    avatarColor: adminProfile?.avatarColor || 'coral',
+    fssaiSupervisorId: adminProfile?.fssaiSupervisorId || 'FSSAI-SUP-88219',
+    soundAlerts: adminProfile?.soundAlerts ?? true,
+    whatsappAlerts: adminProfile?.whatsappAlerts ?? true,
+    autoPrintInvoice: adminProfile?.autoPrintInvoice ?? false
   });
 
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const handleSave = (e) => {
     e.preventDefault();
-    const initials = formData.name
+    const initials = (formData.name || 'Admin')
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
 
-    updateAdminProfile({
-      ...formData,
-      avatarInitials: initials || 'AF'
-    });
+    if (updateAdminProfile) {
+      updateAdminProfile({
+        ...formData,
+        avatarInitials: initials || 'AF'
+      });
+    }
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -70,8 +73,16 @@ export default function AdminProfileModal({ onClose }) {
     }, 900);
   };
 
-  const ordersTodayCount = orders.length;
-  const transitOrdersCount = orders.filter((o) => o.status !== 'Delivered').length;
+  const ordersTodayCount = (orders || []).length;
+  const transitOrdersCount = (orders || []).filter((o) => o?.status !== 'Delivered').length;
+
+  const displayInitials = (formData.name || 'Admin')
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || 'SK';
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -83,24 +94,19 @@ export default function AdminProfileModal({ onClose }) {
         {/* Profile Card Banner */}
         <div className="profile-modal-header">
           <div className="profile-banner-top">
-            <div className={`profile-avatar-large ${formData.avatarColor}`}>
-              {formData.name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .toUpperCase()
-                .slice(0, 2)}
+            <div className={`profile-avatar-large ${formData.avatarColor || 'coral'}`}>
+              {displayInitials}
             </div>
 
             <div className="profile-header-info">
               <div className="profile-name-row">
-                <h2>{formData.name}</h2>
-                <span className="staff-id-badge">{adminProfile.staffId || 'AF-OPS-042'}</span>
+                <h2>{formData.name || 'Administrator'}</h2>
+                <span className="staff-id-badge">{adminProfile?.staffId || 'EMP-01'}</span>
               </div>
-              <span className="profile-role-title">{formData.role}</span>
+              <span className="profile-role-title">{formData.role || 'Operations Lead'}</span>
               <div className="profile-hub-chip">
-                <Snowflake size={12} className="text-cyan" />
-                <span>{formData.hubAssigned}</span>
+                <Snowflake size={11} />
+                <span>{formData.hubAssigned || 'Delhi NCR Central'}</span>
               </div>
             </div>
           </div>

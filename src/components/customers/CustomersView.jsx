@@ -285,12 +285,15 @@ export default function CustomersView({ onSelectCreateOrder }) {
               </div>
             ) : (
               filteredCustomers.map((cust) => {
-                const initials = cust.name
+                const initials = (cust.name || 'Customer')
                   .split(' ')
+                  .filter(Boolean)
                   .map((n) => n[0])
                   .join('')
                   .toUpperCase()
-                  .slice(0, 2);
+                  .slice(0, 2) || 'AF';
+
+                const tagClass = (cust.tag || 'new').toLowerCase().replace(/\s+/g, '-');
 
                 return (
                   <button
@@ -316,8 +319,8 @@ export default function CustomersView({ onSelectCreateOrder }) {
                     </div>
 
                     <div>
-                      <span className={`tag ${cust.tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {cust.tag}
+                      <span className={`tag ${tagClass}`}>
+                        {cust.tag || 'New'}
                       </span>
                     </div>
 
@@ -335,9 +338,7 @@ export default function CustomersView({ onSelectCreateOrder }) {
           </div>
 
           <div className="panel-footer">
-            <span>
-              Showing <strong>{filteredCustomers.length}</strong> of {customers.length} customers
-            </span>
+            Showing {filteredCustomers.length} of {customers.length} registered Akira Fresh clients
           </div>
         </div>
 
@@ -380,16 +381,17 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
             <div className="profile-intro">
               <div className={`profile-avatar ${selectedCustomer.avatarColor || 'coral'}`}>
-                {selectedCustomer.name
+                {(selectedCustomer.name || 'Customer')
                   .split(' ')
+                  .filter(Boolean)
                   .map((n) => n[0])
                   .join('')
                   .toUpperCase()
-                  .slice(0, 2)}
+                  .slice(0, 2) || 'AF'}
               </div>
               <h2>{selectedCustomer.name}</h2>
-              <span className={`tag ${selectedCustomer.tag.toLowerCase().replace(/\s+/g, '-')}`}>
-                {selectedCustomer.tag}
+              <span className={`tag ${(selectedCustomer.tag || 'new').toLowerCase().replace(/\s+/g, '-')}`}>
+                {selectedCustomer.tag || 'New'}
               </span>
               <p className="profile-location">
                 <MapPin size={12} /> {selectedCustomer.zone || selectedCustomer.address || 'Delhi NCR'}
@@ -399,7 +401,7 @@ export default function CustomersView({ onSelectCreateOrder }) {
             {/* Direct Quick Actions */}
             <div className="detail-actions">
               <a
-                href={`https://wa.me/${selectedCustomer.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                href={`https://wa.me/${selectedCustomer.phone?.replace(/[^0-9]/g, '') || ''}?text=${encodeURIComponent(
                   `Hi ${selectedCustomer.name}! Akira Fresh here 🍗 Fresh batches of ${selectedCustomer.favoriteProduct || 'your favorites'} are blast-frozen & ready for 2-hr delivery in ${selectedCustomer.zone || 'Delhi NCR'}. Can we pack an order for you?`
                 )}`}
                 target="_blank"
