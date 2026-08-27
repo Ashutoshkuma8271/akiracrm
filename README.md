@@ -19,3 +19,7 @@ To enable the API and Supabase persistence:
 4. Start the API with `npm run server`.
 
 The dashboard currently includes seeded customer data so the core workflow is usable without a database: search, segment filters, customer selection, profile details, retention insight, toast feedback, import feedback, and add-customer flow.
+
+## GitHub Pages
+
+The repository includes a GitHub Actions deployment workflow. In the repository settings, open **Pages**, choose **GitHub Actions** as the source, and push to `main`. The production URL is `https://ashutoshkuma8271.github.io/crmsystem/`.
