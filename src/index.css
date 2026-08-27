@@ -4283,6 +4283,26 @@ input, button, select, textarea {
     display: none;
   }
 
+  /* Brand Store Banner on Mobile */
+  .brand-store-banner {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .brand-store-left {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .brand-store-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+
   /* Fully Responsive Insight Strip on Mobile */
   .insight-strip {
     flex-direction: column;
