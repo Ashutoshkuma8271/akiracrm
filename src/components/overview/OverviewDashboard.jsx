@@ -308,6 +308,61 @@ export default function OverviewDashboard({ onNavigate, onSelectCategory }) {
         </motion.div>
       </div>
 
+      {/* High-Velocity Non-Veg SKUs Spotlight */}
+      <motion.div className="workspace-card bestsellers-card" variants={itemVariants}>
+        <div className="card-heading">
+          <div>
+            <strong>Akira Fresh Fast-Moving Non-Veg SKUs</strong>
+            <small>Real-time stock velocity & demand across Delhi NCR hubs</small>
+          </div>
+          <button className="secondary-button-sm" onClick={() => onNavigate('Products')}>
+            Manage Inventory ({products.length}) <span>→</span>
+          </button>
+        </div>
+
+        <div className="overview-bestsellers-grid">
+          {products.filter((p) => p.isBestseller).slice(0, 4).map((item) => (
+            <div
+              key={item.id}
+              className="overview-sku-item clickable"
+              onClick={() => onNavigate('Products')}
+              title={`View ${item.name} inventory details`}
+            >
+              <div className="sku-thumb-wrap">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="overview-sku-thumb"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                  }}
+                />
+                <span className="sku-badge-frozen">-18°C</span>
+              </div>
+              <div className="sku-info-box">
+                <div className="sku-category-tag">{item.category}</div>
+                <strong className="sku-title">{item.name}</strong>
+                <div className="sku-pricing-row">
+                  <span className="sku-current-price">₹{item.price}</span>
+                  {item.originalPrice && <span className="sku-orig-price">₹{item.originalPrice}</span>}
+                  <span className="sku-unit-text">{item.unit}</span>
+                </div>
+                <div className="sku-velocity-bar">
+                  <div className="sku-velocity-fill" style={{ width: `${Math.min(100, (item.dailyVelocity / 20) * 100)}%` }} />
+                </div>
+                <div className="sku-stock-subtext">
+                  <span>Stock: <b>{item.stock} pkts</b></span>
+                  <span className="velocity-label">🔥 {item.dailyVelocity}/day</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
       {/* Live Recent Fulfilment Queue */}
       <motion.div className="workspace-card orders-stream-card" variants={itemVariants}>
         <div className="card-heading">

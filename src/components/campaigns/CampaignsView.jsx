@@ -24,7 +24,7 @@ import {
 import { useCrm } from '../../context/CrmContext';
 
 export default function CampaignsView() {
-  const { campaigns, customers, createCampaign, showToast } = useCrm();
+  const { campaigns, customers, products, createCampaign, showToast } = useCrm();
   const [showModal, setShowModal] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(null);
 
@@ -260,6 +260,41 @@ export default function CampaignsView() {
                   <small>Sub-Zero Cold Chain &bull; FSSAI Verified</small>
                 </div>
               </div>
+
+              {(() => {
+                // Determine relevant non-veg visual for the campaign
+                let bannerImg = null;
+                const lowerTitle = (camp.title + ' ' + (camp.discount || '')).toLowerCase();
+                if (lowerTitle.includes('momo')) {
+                  bannerImg = products.find(p => p.sku === 'AF-MOM-01')?.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                } else if (lowerTitle.includes('patty') || lowerTitle.includes('burger')) {
+                  bannerImg = products.find(p => p.sku === 'AF-PAT-01')?.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80';
+                } else if (lowerTitle.includes('tikka') || lowerTitle.includes('kebab') || lowerTitle.includes('barbecue') || lowerTitle.includes('grill')) {
+                  bannerImg = products.find(p => p.sku === 'AF-TIK-01' || p.sku === 'AF-SEEKH-01')?.image || 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80';
+                } else if (lowerTitle.includes('tub') || lowerTitle.includes('stock') || lowerTitle.includes('inactive') || lowerTitle.includes('spenders')) {
+                  bannerImg = products.find(p => p.sku === 'AF-TUB-01')?.image || 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80';
+                }
+
+                if (!bannerImg) return null;
+
+                return (
+                  <div className="wa-media-banner">
+                    <img
+                      src={bannerImg}
+                      alt="Akira Fresh Promo"
+                      className="wa-media-img"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                      }}
+                    />
+                    <span className="wa-media-tag">🍗 Akira Fresh Non-Veg Cold Drop</span>
+                  </div>
+                );
+              })()}
+
               <p className="wa-bubble-text">
                 {camp.messageTemplate
                   .replace('{{name}}', 'Priya')

@@ -724,17 +724,36 @@ export default function OrdersView({ initialSelectedCustomer = null }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedOrderForInvoice.items.map((it, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <strong>{it.name}</strong>
-                        <span className="block-text">-18°C Cryogenic Blast Frozen</span>
-                      </td>
-                      <td className="text-right">{it.qty}</td>
-                      <td className="text-right">₹{it.price}</td>
-                      <td className="text-right">₹{it.price * it.qty}</td>
-                    </tr>
-                  ))}
+                  {selectedOrderForInvoice.items.map((it, idx) => {
+                    const matchedProd = products.find(p => p.id === it.productId || p.name === it.name);
+                    const prodImg = it.image || matchedProd?.image || 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+
+                    return (
+                      <tr key={idx}>
+                        <td>
+                          <div className="invoice-item-desc-cell">
+                            <img
+                              src={prodImg}
+                              alt={it.name}
+                              className="invoice-item-thumb"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80';
+                              }}
+                            />
+                            <div>
+                              <strong>{it.name}</strong>
+                              <span className="block-text">-18°C Cryogenic Blast Frozen &bull; Non-Veg Certified</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-right font-medium">{it.qty}</td>
+                        <td className="text-right">₹{it.price}</td>
+                        <td className="text-right font-semibold">₹{it.price * it.qty}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
