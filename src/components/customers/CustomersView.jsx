@@ -19,6 +19,7 @@ import {
   FileText,
   Clock,
   ArrowRight,
+  ArrowLeft,
   MessageSquare,
   Award,
   Flame,
@@ -39,6 +40,7 @@ export default function CustomersView({ onSelectCreateOrder }) {
   } = useCrm();
 
   const [selectedId, setSelectedId] = useState(customers[0]?.id || null);
+  const [mobileViewMode, setMobileViewMode] = useState('list'); // 'list' | 'detail'
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTag, setFilterTag] = useState('All customers');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -230,9 +232,9 @@ export default function CustomersView({ onSelectCreateOrder }) {
       </section>
 
       {/* Main Layout Grid */}
-      <div className="customers-layout-grid">
+      <div className={`customers-layout-grid mobile-mode-${mobileViewMode}`}>
         {/* Left: Customer Directory */}
-        <div className="customer-panel">
+        <div className={`customer-panel ${mobileViewMode === 'detail' ? 'mobile-hidden' : ''}`}>
           <div className="panel-toolbar">
             <div className="search-box">
               <Search size={14} />
@@ -293,7 +295,10 @@ export default function CustomersView({ onSelectCreateOrder }) {
                 return (
                   <button
                     key={cust.id}
-                    onClick={() => setSelectedId(cust.id)}
+                    onClick={() => {
+                      setSelectedId(cust.id);
+                      setMobileViewMode('detail');
+                    }}
                     className={
                       selectedCustomer?.id === cust.id
                         ? 'customer-row selected-row'
@@ -338,7 +343,14 @@ export default function CustomersView({ onSelectCreateOrder }) {
 
         {/* Right: Selected Customer Profile Drawer */}
         {selectedCustomer && (
-          <aside className="detail-panel">
+          <aside className={`detail-panel ${mobileViewMode === 'list' ? 'mobile-hidden' : ''}`}>
+            <button
+              className="back-to-list-bar hide-on-desktop"
+              onClick={() => setMobileViewMode('list')}
+            >
+              <ArrowLeft size={14} /> Back to Customer List
+            </button>
+
             <div className="detail-header">
               <div className="rfm-badge-pill">
                 <Award size={12} className="text-sun" />
