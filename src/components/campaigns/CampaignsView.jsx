@@ -164,14 +164,16 @@ export default function CampaignsView() {
 
       {/* Retention Insights Strip */}
       <section className="insight-strip">
-        <div className="insight-icon">
-          <Sparkles size={18} />
-        </div>
-        <div className="insight-body">
-          <strong>WhatsApp is Akira Fresh’s #1 conversion channel</strong>
-          <p>
-            Messages sent on Thursday & Friday between 4:00 PM - 7:00 PM generate an average <strong>38% lift in weekend barbecue & family tub reorders</strong>.
-          </p>
+        <div className="insight-top-content">
+          <div className="insight-icon">
+            <Sparkles size={20} />
+          </div>
+          <div className="insight-body">
+            <strong>WhatsApp is Akira Fresh’s #1 conversion channel</strong>
+            <p>
+              Messages sent on Thursday & Friday between 4:00 PM - 7:00 PM generate an average <strong>38% lift in weekend barbecue & family tub reorders</strong>.
+            </p>
+          </div>
         </div>
         <button
           className="insight-action-btn"

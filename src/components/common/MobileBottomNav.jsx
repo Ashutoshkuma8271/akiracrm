@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, ShoppingBag, Package, Megaphone, Truck, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, Package, Megaphone } from 'lucide-react';
 import { useCrm } from '../../context/CrmContext';
 
 export default function MobileBottomNav({ activeNav, setActiveNav }) {
@@ -10,8 +10,7 @@ export default function MobileBottomNav({ activeNav, setActiveNav }) {
     { label: 'Customers', icon: Users, badge: customers.length },
     { label: 'Orders', icon: ShoppingBag, badge: orders.filter(o => o.status !== 'Delivered').length },
     { label: 'Products', icon: Package, badge: null },
-    { label: 'Campaigns', icon: Megaphone, badge: null },
-    { label: 'Logistics', icon: Truck, badge: null }
+    { label: 'Campaigns', icon: Megaphone, badge: null }
   ];
 
   return (
@@ -25,7 +24,7 @@ export default function MobileBottomNav({ activeNav, setActiveNav }) {
             aria-label={label}
           >
             <div className="bottom-nav-icon-wrap">
-              <Icon size={18} />
+              <Icon size={19} />
               {badge !== null && badge > 0 ? (
                 <span className="bottom-nav-badge">{badge}</span>
               ) : null}

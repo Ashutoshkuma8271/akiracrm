@@ -163,15 +163,17 @@ export default function LogisticsView() {
 
       {/* Quality Certification */}
       <section className="insight-strip logistics-cert-strip">
-        <div className="insight-icon">
-          <ShieldCheck size={20} className="text-green" />
-        </div>
-        <div className="insight-body">
-          <strong>Akira Fresh Cold-Chain Quality Guarantee</strong>
-          <p>
-            Every blast-frozen chicken & mutton snack is packaged in insulated dry-ice containers with thermal color-change indicators.
-            If the package temperature exceeds -12°C during transit, it is automatically flagged for replacement.
-          </p>
+        <div className="insight-top-content">
+          <div className="insight-icon">
+            <ShieldCheck size={20} className="text-green" />
+          </div>
+          <div className="insight-body">
+            <strong>Akira Fresh Cold-Chain Quality Guarantee</strong>
+            <p>
+              Every blast-frozen chicken & mutton snack is packaged in insulated dry-ice containers with thermal color-change indicators.
+              If the package temperature exceeds -12°C during transit, it is automatically flagged for replacement.
+            </p>
+          </div>
         </div>
       </section>
     </div>

@@ -48,13 +48,13 @@ export default function OverviewDashboard({ onNavigate }) {
             className="secondary-button"
             onClick={() => onNavigate('Logistics')}
           >
-            <Truck size={15} /> View Cold-Chain Hubs
+            <Truck size={15} /> Cold Hubs
           </button>
           <button
             className="primary-button"
             onClick={() => onNavigate('Orders')}
           >
-            <span>＋</span> Create New Order
+            <span>＋</span> New Order
           </button>
         </div>
       </section>
@@ -66,10 +66,10 @@ export default function OverviewDashboard({ onNavigate }) {
             <TrendingUp size={20} />
           </div>
           <div className="metric-copy">
-            <span>Total CRM Revenue</span>
+            <span>CRM Revenue</span>
             <strong>₹{totalRevenue.toLocaleString('en-IN')}</strong>
             <p>
-              <b>↑ 18.4%</b> vs. previous cycle
+              <b>↑ 18.4%</b> growth
             </p>
           </div>
           <span className="metric-arrow">
@@ -82,10 +82,10 @@ export default function OverviewDashboard({ onNavigate }) {
             <ShoppingBag size={20} />
           </div>
           <div className="metric-copy">
-            <span>Active Deliveries</span>
-            <strong>{activeOrdersCount} in transit</strong>
+            <span>In Transit</span>
+            <strong>{activeOrdersCount} orders</strong>
             <p>
-              <b>↑ 98.9%</b> cold-chain SLA
+              <b>↑ 98.9%</b> SLA
             </p>
           </div>
           <span className="metric-arrow">
@@ -98,10 +98,10 @@ export default function OverviewDashboard({ onNavigate }) {
             <Users size={20} />
           </div>
           <div className="metric-copy">
-            <span>Total Customers</span>
-            <strong>{customers.length} profiles</strong>
+            <span>Customers</span>
+            <strong>{customers.length} total</strong>
             <p>
-              <b>{vipCount} VIP</b> &bull; {customers.filter(c => c.tag === 'Repeat buyer').length} repeat
+              <b>{vipCount} VIP</b> members
             </p>
           </div>
           <span className="metric-arrow">
@@ -114,10 +114,10 @@ export default function OverviewDashboard({ onNavigate }) {
             <AlertCircle size={20} />
           </div>
           <div className="metric-copy">
-            <span>At-Risk Customers</span>
+            <span>At Risk</span>
             <strong>{atRiskCount} contacts</strong>
             <p className="negative">
-              <b>{atRiskCount}</b> need win-back offer
+              <b>{atRiskCount}</b> win-back
             </p>
           </div>
           <span className="metric-arrow">
@@ -136,7 +136,7 @@ export default function OverviewDashboard({ onNavigate }) {
               <small>Real-time share across blast-frozen categories</small>
             </div>
             <button className="text-button" onClick={() => onNavigate('Products')}>
-              View Full Catalog <span>→</span>
+              View All <span>→</span>
             </button>
           </div>
 
@@ -179,7 +179,7 @@ export default function OverviewDashboard({ onNavigate }) {
                   </div>
                   <div>
                     <strong>{hub.name}</strong>
-                    <small>{hub.activeVans} active cold vans &bull; {hub.deliveriesToday} orders today</small>
+                    <small>{hub.activeVans} vans &bull; {hub.deliveriesToday} orders</small>
                   </div>
                 </div>
                 <div className="hub-mini-right">
@@ -199,8 +199,8 @@ export default function OverviewDashboard({ onNavigate }) {
             <strong>Recent Orders & Dispatch Stream</strong>
             <small>Live fulfilment queue for Delhi NCR</small>
           </div>
-          <button className="secondary-button" onClick={() => onNavigate('Orders')}>
-            Manage All {orders.length} Orders <span>→</span>
+          <button className="secondary-button-sm" onClick={() => onNavigate('Orders')}>
+            View All ({orders.length}) <span>→</span>
           </button>
         </div>
 
@@ -240,17 +240,19 @@ export default function OverviewDashboard({ onNavigate }) {
         </div>
       </div>
 
-      {/* AI Retention & Growth Playbook */}
+      {/* AI Retention & Growth Playbook (Responsive Card) */}
       <section className="insight-strip">
-        <div className="insight-icon">
-          <Sparkles size={18} />
-        </div>
-        <div className="insight-body">
-          <strong>Akira Fresh Growth Playbook: 1kg Family Pack surge</strong>
-          <p>
-            Repeat customers in Gurugram & South Delhi are reordering <strong>The Protein Stock-Up Tub (1kg)</strong> every 8 days.
-            Launch a targeted WhatsApp broadcast with code <code>STOCKUP</code> to generate an estimated ₹45,000 in weekend orders.
-          </p>
+        <div className="insight-top-content">
+          <div className="insight-icon">
+            <Sparkles size={20} />
+          </div>
+          <div className="insight-body">
+            <strong>Akira Fresh Growth Playbook: 1kg Family Pack Surge</strong>
+            <p>
+              Repeat customers in Gurugram & South Delhi are reordering <strong>The Protein Stock-Up Tub (1kg)</strong> every 8 days.
+              Launch a targeted WhatsApp broadcast with code <code>STOCKUP</code> to generate an estimated ₹45,000 in weekend orders.
+            </p>
+          </div>
         </div>
         <button
           className="insight-action-btn"
